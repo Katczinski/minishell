@@ -35,8 +35,8 @@ void	sigint_handler(int signo)
 		rl_done = 1;
 	}
 }
-/*
-void	get_binary(int j)
+
+void	get_binary(t_command_list *cmd)
 {
 	char		*temp;
 	int		i;
@@ -51,7 +51,7 @@ void	get_binary(int j)
 		temp = ft_strjoin(g_all.path[i], "/");
 		if (!temp)
 			exit(1);
-		g_all.binary = ft_strjoin(temp, g_all.args[j][0]);
+		g_all.binary = ft_strjoin(temp, cmd->command[0]);
 		free(temp);
 		if (!stat(g_all.binary, stats))
 			break ;
@@ -60,8 +60,8 @@ void	get_binary(int j)
 		i++;
 	}
 	free(stats);
-	if (!g_all.path[i] && g_all.args[j][0])
-		printf("%s: command not found\n", g_all.args[j][0]);
+	if (!g_all.path[i] && cmd->command[0])
+		printf("%s: command not found\n", cmd->command[0]);
 }
 
 void	close_fd(int (*fd)[2])
@@ -71,7 +71,7 @@ void	close_fd(int (*fd)[2])
 
 	i = 0;
 	j = 0;
-	while (i < g_all.pid_count - 1)
+	while (i < g_all.args->elements - 1)
 	{
 		j = 0;
 		while (j < 2)
@@ -83,49 +83,50 @@ void	close_fd(int (*fd)[2])
 	}
 }
 
-void	child(int (*fd)[2], int *pid, int i, char **envp)
+void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 {
 	pid[i] = fork();
 		if (pid[i] == 0)
 		{
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
-			if (g_all.args[i + 1] != NULL)
+			if (cmd->next != NULL)
 				dup2(fd[i][1], STDOUT_FILENO);
 			close_fd(fd);
-			execve(g_all.binary, g_all.args[i], envp);
+			execve(g_all.binary, cmd->command, envp);
 		}
 }
-*/
+
 
 int	execute(char **envp)
 {
 	
 	(void)envp;
-	return (1);
-/*	int	pid[g_all->args->elements];
-	int	fd[g_all - 1][2];
+	t_command_list	*cmd;
+	cmd = g_all.args->head;
+	int	pid[g_all.args->elements];
+	int	fd[g_all.args->elements - 1][2];
 	int	i = 0;
-	for (int j = 0; j < g_all.pid_count; j++)
+	for (int j = 0; j < g_all.args->elements; j++)
 	{
 		pid[j] = 0;
-		if (j < g_all.pid_count - 1)
+		if (j < g_all.args->elements - 1)
 			pipe(fd[j]);
 	}
-	while (g_all.args->head)
+	while (cmd)
 	{
-		get_binary(i);
-		
+		get_binary(cmd);
 		if (g_all.binary)
-			child(fd, pid, i, envp);
+			child(fd, cmd, pid, i, envp);
 		i++;
+		cmd = cmd->next;
 	}
 	close_fd(fd);
 	for (int j = 0; j < 2; j++)
 		waitpid(pid[j], 0, 0);
 
 	return (1);	
-*/
+
 }
 
 void	loop(int argc, char **argv, char **envp)
@@ -145,10 +146,12 @@ void	loop(int argc, char **argv, char **envp)
 			exit(1);
 		}
 		if (line[0] != '\0')
+		{
 			add_history(line);
-		g_all.args = parser(line, envp);
-		g_all.status = execute(envp);
-		free(line);
+			g_all.args = parser(line, envp);
+			g_all.status = execute(envp);
+			free(line);
+		}
 		
 	}
 }

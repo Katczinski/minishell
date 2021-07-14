@@ -11,7 +11,7 @@ static int	line_check(char *line, t_info *info)
     i = -1;
     quotes = 0;
     dquotes = 0;
-    if (!ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>' && line[0] != '\"' && line[0] != '\'')
+    if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>' && line[0] != '\"' && line[0] != '\'')
 		return (print_error("Wrong syntax\n", info));
 	info->elements++;
     while (line[++i])
@@ -297,12 +297,12 @@ t_info *parser(char *line, char **envp)
     }
 	// if (ft_strchr(line, '|'))
 	// 	arr = split_by_pipe(line);
-	int j;
-	int f;
+//	int j;
+//	int f;
 
-	f = 0;
-	t_command_list *tmp = info->head;
-	while (tmp)
+//	f = 0;
+//	t_command_list *tmp = info->head;
+/*	while (tmp)
 	{
 		printf("node: %d\n", ++f);
 		j = 0;
@@ -313,7 +313,7 @@ t_info *parser(char *line, char **envp)
 		}
 		tmp = tmp->next;
 	}
-    // printf("line: %s\n", line);
+*/ 	// printf("line: %s\n", line);
 	// new_line = ft_split_modified(line);
 	// new_line = check_tabs(new_line);
 	// envp[0] = 0;
