@@ -122,7 +122,7 @@ int	execute(char **envp)
 		cmd = cmd->next;
 	}
 	close_fd(fd);
-	for (int j = 0; j < 2; j++)
+	for (int j = 0; j < g_all.args->elements; j++)
 		waitpid(pid[j], 0, 0);
 
 	return (1);	
