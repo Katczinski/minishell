@@ -33,6 +33,7 @@ static int	line_check(char *line, t_info *info)
             dquotes = 0;
         else if ((line[i] == '|' || line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
             info->elements++;
+		// if (line[i] == '>' && line[i + 1] == '>' && )
     }
     // dquotes = 0;
     if ((!line[i] && (quotes || dquotes)) || skip_whitespaces(i, line))
@@ -57,7 +58,6 @@ char	**check_tabs(char **line)
 	}
 	return (line);
 }
-
 
 // char *backslash(char *line, int *i)
 // {
@@ -215,7 +215,7 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			// break ;
 		}
 		// if (*output)[*i] == '<' || (*output)[*i] == '>')
-		// 	*output = treat_pipe(*output, i, info);
+		// 	*output = treat_redirect(*output, i, info);
 		if ((*output)[*i] == '\'')
 			*output = treat_quote(*output, i);
 		if ((*output)[*i] == '\"')
@@ -238,7 +238,8 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	char *prev_str;
 
 	// printf("before removing space: %s\n", line);
-	prev_str = malloc(sizeof(char) * (*i + 1));
+	if (line[(*i) - 1])
+		prev_str = malloc(sizeof(char) * (*i + 1));
 	if (!prev_str)
 	{
 		print_error(strerror(errno), info);
@@ -298,7 +299,7 @@ t_info *parser(char *line, char **envp)
 		if (line[i] == '|')
 			line = treat_pipe(line, &i, info);
 		// if (line[i] == '<' || line[i] == '>')
-		// 	line = treat_redirect(line, &i, info)
+		// 	line = treat_redirect(line, &i, info);
         // printf("line: %s\n", line);
     }
 	if (line[i - 1] && !info->head)
