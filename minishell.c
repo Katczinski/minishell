@@ -16,6 +16,25 @@
 
 t_all	g_all;
 
+void	ft_free(void)
+{
+	int		i;
+	t_command_list	*temp;
+
+	while (g_all.args && g_all.args->head)
+	{
+		i = 0;
+		while (g_all.args->head &&  g_all.args->head->command[i])
+			free(g_all.args->head->command[i++]);
+		free(g_all.args->head->command);
+		free(g_all.args->head->file_name);
+		temp = g_all.args->head->next;
+		free(g_all.args->head);
+		g_all.args->head = temp;
+	}
+	free(g_all.args);
+}
+
 int	event(void)
 {
 	return 0;
@@ -152,6 +171,7 @@ void	loop(int argc, char **argv, char **envp)
 			g_all.status = execute(envp);
 			free(line);
 		}
+		ft_free();
 		
 	}
 }
@@ -177,6 +197,8 @@ int	main(int argc, char **argv, char **envp)
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
 	g_all.path = get_path(envp);
+	if (g_all.path == 0)
+		return (0);
 	g_all.status = 1;
 	rl_event_hook = event;
 	g_all.term.c_lflag &= ~(ISIG);	
