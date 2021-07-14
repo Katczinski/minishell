@@ -11,7 +11,8 @@ static int	line_check(char *line, t_info *info)
     i = -1;
     quotes = 0;
     dquotes = 0;
-    if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>' && line[0] != '\"' && line[0] != '\'')
+    if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
+	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t')
 		return (print_error("Wrong syntax\n", info));
 	info->elements++;
     while (line[++i])
