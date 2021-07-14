@@ -1,0 +1,39 @@
+#ifndef MINISHELL_H
+# define MINISHELL_H
+
+# include "libft.h"
+# include "parser.h"
+# include <unistd.h>
+# include <term.h>
+# include <termios.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <unistd.h>
+# include <fcntl.h>
+# include <stdlib.h>
+# include <signal.h>
+# include <readline/readline.h>
+# include <readline/history.h>
+# include <sys/wait.h>
+# include <sys/stat.h>
+
+# include <string.h>
+
+
+
+typedef struct	s_all
+{
+	struct termios	term;
+	struct termios	saved;
+	int		status;
+	int		pid_count;
+	int		exit_status;
+	char		**path;
+	char		*binary;
+	t_info		*args;
+}			t_all;
+
+
+int		ft_putchar(int c);
+
+#endif
