@@ -13,13 +13,15 @@ NAME = minishell
 
 INC = -Iincludes -Ilibft
 
+LIBS = -lreadline -ltermcap -Llibft -lft
+
 FLAGS = -Wall -Wextra -Werror
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
 		make -C ./libft
-		gcc $(FLAGS) -g $(OBJS) -o $(NAME) $(INC) -lreadline -ltermcap -Llibft -lft
+		gcc $(FLAGS) -g $(OBJS) -o $(NAME) $(INC) $(LIBS)
 
 %.o: %.c
 		gcc $(FLAGS) -g $(INC) -c $< -o $@
