@@ -247,9 +247,12 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	// printf("to add: %s\n", prev_str);
 	if (!info->tail)
 		add_element(init_element(info), info);
-	info->tail->lines++;
+	if (prev_str[0])
+	{
+		info->tail->lines++;
 	// printf("afte init: hello\n");
-	info->tail->command = add_line_to_arr(prev_str, info->tail, info);
+		info->tail->command = add_line_to_arr(prev_str, info->tail, info);
+	}
 	ft_skip_whitespaces(i, line);
 	// printf("after skipping space: %s\n", line + (*i));
 	output = ft_strdup(line + *i);
