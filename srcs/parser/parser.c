@@ -209,11 +209,13 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 		return (0);
 	while ((*output)[++(*i)])
 	{
-		if ((*output)[*i] == '|' || (*output)[*i] == '<' || (*output)[*i] == '>')
+		if ((*output)[*i] == '|')
 		{
 			*output = treat_pipe(*output, i, info);
 			// break ;
 		}
+		// if (*output)[*i] == '<' || (*output)[*i] == '>')
+		// 	*output = treat_pipe(*output, i, info);
 		if ((*output)[*i] == '\'')
 			*output = treat_quote(*output, i);
 		if ((*output)[*i] == '\"')
@@ -245,7 +247,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	if (line[(*i) - 1])
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
 	// printf("to add: %s\n", prev_str);
-	if (!info->tail)
+	if (!info->tail && prev_str[0])
 		add_element(init_element(info), info);
 	if (prev_str[0])
 	{
@@ -293,10 +295,10 @@ t_info *parser(char *line, char **envp)
             line = treat_env(line, &i, envp);
 		if (line[i] == ' ' || line[i] == '\t')
 			line = treat_space(line, &i, envp, info);
-		if (line[i] =='|')
+		if (line[i] == '|')
 			line = treat_pipe(line, &i, info);
-
-		// if 
+		// if (line[i] == '<' || line[i] == '>')
+		// 	line = treat_redirect(line, &i, info)
         // printf("line: %s\n", line);
     }
 	if (line[i - 1] && !info->head)
