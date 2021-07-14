@@ -21,16 +21,20 @@ void	ft_free(void)
 	int		i;
 	t_command_list	*temp;
 
+	temp = 0;
 	while (g_all.args && g_all.args->head)
 	{
 		i = 0;
-		while (g_all.args->head &&  g_all.args->head->command[i])
+		while (g_all.args->head->command
+			&& g_all.args->head->command[i])
 			free(g_all.args->head->command[i++]);
-		free(g_all.args->head->command);
-		free(g_all.args->head->file_name);
-		temp = g_all.args->head->next;
-		free(g_all.args->head);
-		g_all.args->head = temp;
+		if (g_all.args->head->command)
+			free(g_all.args->head->command);
+		if (g_all.args->head->file_name)
+			free(g_all.args->head->file_name);
+		temp = g_all.args->head;
+		g_all.args->head = g_all.args->head->next; 
+		free(temp);
 	}
 	free(g_all.args);
 }
@@ -169,10 +173,9 @@ void	loop(int argc, char **argv, char **envp)
 			add_history(line);
 			g_all.args = parser(line, envp);
 			g_all.status = execute(envp);
-			free(line);
+			ft_free();
 		}
-		ft_free();
-		
+		free(line);
 	}
 }
 
