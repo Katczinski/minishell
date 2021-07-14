@@ -254,7 +254,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	output = ft_strdup(line + *i);
 	*i = -1;
     // printf("out: %s\n", output);
-	if (check_last_arg(&output, envp, i, info))
+	if (output[0] && check_last_arg(&output, envp, i, info))
 	{
 		info->tail->command = add_line_to_arr(output, info->tail, info);
 	}
@@ -295,25 +295,33 @@ t_info *parser(char *line, char **envp)
 		// if 
         // printf("line: %s\n", line);
     }
+	if (line[i - 1] && !info->head)
+	{
+		add_element(init_element(info), info);
+		info->tail->lines++;
+ 		// printf("line: %s\n", line);
+ 		// printf("line: %d\n", i);
+		info->tail->command = add_line_to_arr(line, info->tail, info);
+	}
 	// if (ft_strchr(line, '|'))
 	// 	arr = split_by_pipe(line);
-//	int j;
-//	int f;
+	// int j;
+	// int f;
 
-//	f = 0;
-//	t_command_list *tmp = info->head;
-/*	while (tmp)
-	{
-		printf("node: %d\n", ++f);
-		j = 0;
-		while (tmp->command[j])
-		{
-			printf("%s\n", tmp->command[j]);
-			j++;
-		}
-		tmp = tmp->next;
-	}
-*/ 	// printf("line: %s\n", line);
+	// f = 0;
+	// t_command_list *tmp = info->head;
+	// while (tmp)
+	// {
+	// 	printf("node: %d\n", ++f);
+	// 	j = 0;
+	// 	while (tmp->command[j])
+	// 	{
+	// 		printf("%s\n", tmp->command[j]);
+	// 		j++;
+	// 	}
+	// 	tmp = tmp->next;
+	// }
+ 	// printf("line: %s\n", line);
 	// new_line = ft_split_modified(line);
 	// new_line = check_tabs(new_line);
 	// envp[0] = 0;
