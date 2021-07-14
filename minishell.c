@@ -37,6 +37,7 @@ void	ft_free(void)
 		free(temp);
 	}
 	free(g_all.args);
+	g_all.args = 0;
 }
 
 int	event(void)
@@ -172,8 +173,11 @@ void	loop(int argc, char **argv, char **envp)
 		{
 			add_history(line);
 			g_all.args = parser(line, envp);
-			g_all.status = execute(envp);
-			ft_free();
+			if (g_all.args)
+			{
+				g_all.status = execute(envp);
+				ft_free();
+			}
 		}
 		free(line);
 	}
