@@ -12,9 +12,8 @@ t_command_list	*init_element(t_info *info)
 	}
 	element->type = 0;
 	element->command = 0;
+	// element->file_name = 0;
 	element->lines = 0;
-	element->redirect = 0;
-	element->file_name = 0;
 	element->next = 0;
 	return (element);
 }
@@ -33,7 +32,7 @@ void	add_element(t_command_list *element, t_info *info)
 	}
 }
 
-char **add_line_to_arr(char *line, t_command_list *cmd, t_info *info)
+char **add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
 {
 	char	**arr;
 	int		j;

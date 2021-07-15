@@ -199,6 +199,30 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
 	add_element(init_element(info), info);
+	*i = -1;
+	free(line);
+	return (output);
+}
+
+char *treat_redirect(char *line, int *i, t_info *info)
+{
+	char *output;
+
+	add_element(init_element(info), info);
+	if (line[*i] == '>' && line[*i + 1] != '>')
+		info->tail->type = RED_OUT;
+	if (line[*i] == '>' && line[*i + 1] == '>')
+		info->tail->type = DRED_OUT;
+	if (line[*i] == '<' && line[*i + 1] != '<')
+		info->tail->type = RED_IN;
+	if (line[*i] == '<' && line[*i + 1] == '<')
+		info->tail->type = DRED_IN;
+	(*i)++;
+	if (line[*i] == '>' || line[*i] == '<')
+		(*i)++;
+	ft_skip_whitespaces(i, line);
+	output = ft_strdup(line + *i);
+	*i = -1;
 	free(line);
 	return (output);
 }
@@ -214,8 +238,8 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			*output = treat_pipe(*output, i, info);
 			// break ;
 		}
-		// if (*output)[*i] == '<' || (*output)[*i] == '>')
-		// 	*output = treat_redirect(*output, i, info);
+		if ((*output)[*i] == '<' || (*output)[*i] == '>')
+			*output = treat_redirect(*output, i, info);
 		if ((*output)[*i] == '\'')
 			*output = treat_quote(*output, i);
 		if ((*output)[*i] == '\"')
@@ -254,7 +278,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	{
 		info->tail->lines++;
 	// printf("afte init: hello\n");
-		info->tail->command = add_line_to_arr(prev_str, info->tail, info);
+		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
 	}
 	ft_skip_whitespaces(i, line);
 	// printf("after skipping space: %s\n", line + (*i));
@@ -263,7 +287,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
     // printf("out: %s\n", output);
 	if (output[0] && check_last_arg(&output, envp, i, info))
 	{
-		info->tail->command = add_line_to_arr(output, info->tail, info);
+		info->tail->command = add_line_to_cmd(output, info->tail, info);
 	}
 	//
 	
@@ -271,6 +295,37 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 		return (0);
 	return (output);
 }
+
+// char	*treat_redirect(char *line, int *i, t_info *info)
+// {
+// 	char	*output;
+// 	char	*file_name;
+// 	int		start;
+
+// 	if (line[(*i) - 1] == '>' && line[*i] != '>')
+// 	{
+// 		ft_skip_whitespaces(i, line);
+// 		start = *i;
+// 		if (line[*i] == '\"')
+// 		{
+// 			start++;
+// 			output = treat_quote(line, *i);
+// 		}
+// 		file_name = malloc(sizeof(char) * (*i - start + 1));
+// 		if (!file_name)
+// 		{
+// 			print_error(strerror(errno), info);
+// 			return (0);
+// 		}
+// 		file_name = ft_memcpy(file_name, line + start, *i - start);
+// 		if (file_name[0])
+// 			add_element(init_element(info), info);
+// 		}
+// 	}
+
+
+// 	return (output);
+// }
 
 t_info *parser(char *line, char **envp)
 {
@@ -298,8 +353,8 @@ t_info *parser(char *line, char **envp)
 			line = treat_space(line, &i, envp, info);
 		if (line[i] == '|')
 			line = treat_pipe(line, &i, info);
-		// if (line[i] == '<' || line[i] == '>')
-		// 	line = treat_redirect(line, &i, info);
+		if (line[i] == '<' || line[i] == '>')
+			line = treat_redirect(line, &i, info);
         // printf("line: %s\n", line);
     }
 	if (line[i - 1] && !info->head)
@@ -308,10 +363,11 @@ t_info *parser(char *line, char **envp)
 		info->tail->lines++;
  		// printf("line: %s\n", line);
  		// printf("line: %d\n", i);
-		info->tail->command = add_line_to_arr(line, info->tail, info);
+		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	// if (ft_strchr(line, '|'))
 	// 	arr = split_by_pipe(line);
+	//
 	// int j;
 	// int f;
 
@@ -320,6 +376,7 @@ t_info *parser(char *line, char **envp)
 	// while (tmp)
 	// {
 	// 	printf("node: %d\n", ++f);
+	// 	printf("type %d\n", tmp->type);
 	// 	j = 0;
 	// 	while (tmp->command[j])
 	// 	{
@@ -328,6 +385,7 @@ t_info *parser(char *line, char **envp)
 	// 	}
 	// 	tmp = tmp->next;
 	// }
+	//
  	// printf("line: %s\n", line);
 	// new_line = ft_split_modified(line);
 	// new_line = check_tabs(new_line);

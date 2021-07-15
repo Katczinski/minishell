@@ -21,11 +21,10 @@
 
 typedef struct s_command_list
 {
-	int			type;
-	char    		**command;
-	int			lines;
-	int 			redirect;
-	char			*file_name;
+	int					type;
+	char    			**command;
+	// char				*file_name;
+	int					lines;
 	struct	s_command_list	*next;
 }   				t_command_list;
 
@@ -49,8 +48,7 @@ t_info  		       	 *init_struct(void);
 t_info 				*parser(char *line, char **envp);
 t_command_list			*init_element(t_info *info);
 void				add_element(t_command_list *element, t_info *info);
-char				**add_line_to_arr(char *line, t_command_list *cmd, t_info *info);
+char				**add_line_to_cmd(char *line, t_command_list *cmd, t_info *info);
 
 
-t_info				*init_struct(void);
 #endif
