@@ -1,16 +1,64 @@
 #include "parser.h"
 
+int	redirects_check(char *line, int i)
+{
+	int in;
+	int out;
+
+	// if (line[i] == '>')
+	// 	out = 1;
+	// else
+	// 	in = 1;
+	out = 0;
+	in = 0;
+	while (line[i] && out < 3 && in < 3)
+	{
+		if (ft_isalnum(line[i]) && out)
+			out = 0;
+		else if (ft_isalnum(line[i]) && out)
+			in = 0;
+		if (line[i] == '\'' || line[i] == '\"' || line[i] == '|')
+			break ;
+		// if ((line[i] == '>' && out == 2) || (line[i] == '<' && in == 2) || (line[i] == '>' && in) || (line[i] == '<' && out))
+		// 	return (1);
+		if (line[i] == '>')
+			out++;
+		else if (line[i] == '<')
+			in++;
+		// else if (line[i] == ' ')
+		// 	ft_skip_whitespaces(&i, line);
+		if (out && in)
+			return (1);
+		// if (line[i] == '>' && (!out || (out && line[i - 1] == '>')))
+		// 	out++;
+		// else if (line[i] == '<' && (!in || (in && line[i - 1] == '<')))
+		// 	in++;
+		
+		// if ((line[i] == '>' && out) || (line[i] == '<' && in))
+		// 	return (1);
+		// if ((line[i] == '>' && in) || (line[i] == '<' && out))
+		// 	return (1);
+		
+		i++;
+	}
+	if (out > 2 || in > 2)
+		return (1);
+	return (0);
+}
+
 static int	line_check(char *line, t_info *info)
 {
     int i;
     int quotes;
     int dquotes;
+	int redirects;
 
     // if (*line == '\0')
     //     return ;
     i = -1;
     quotes = 0;
     dquotes = 0;
+	redirects = 0;
     if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
 	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t')
 		return (print_error("Wrong syntax\n", info));
@@ -18,27 +66,22 @@ static int	line_check(char *line, t_info *info)
     while (line[++i])
     {
         if (line[i] == '\'' && !quotes && !dquotes)
-		{
 			quotes = 1;
-			// info->quoted_lines++;
-		}
         else if (line[i] == '\'' && quotes && !dquotes)
             quotes = 0;
         else if (line[i] == '\"' && !dquotes && !quotes)
-		{
 			dquotes = 1;
-			// info->quoted_lines++;
-		}
         else if (line[i] == '\"' && dquotes && !quotes)
             dquotes = 0;
         else if ((line[i] == '|' || line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
             info->elements++;
-		// if (line[i] == '>' && line[i + 1] == '>' && )
+		if ((line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
+			redirects = redirects_check(line, i);
+		if (redirects)
+			break ;
     }
-    // dquotes = 0;
-    if ((!line[i] && (quotes || dquotes)) || skip_whitespaces(i, line))
+    if ((!line[i] && (quotes || dquotes)) || skip_whitespaces(i, line) || redirects)
 		return (print_error("Wrong syntax\n", info));
-    // printf("elements: %d\n", info->elements);
 	return (0);
 }
 
