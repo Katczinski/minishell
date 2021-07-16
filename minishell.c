@@ -30,6 +30,8 @@ void	ft_free(void)
 			free(g_all.args->head->command[i++]);
 		if (g_all.args->head->command)
 			free(g_all.args->head->command);
+		if (g_all.binary)
+			free(g_all.binary);
 		temp = g_all.args->head;
 		g_all.args->head = g_all.args->head->next; 
 		free(temp);
@@ -109,6 +111,9 @@ int	find_redirin(t_command_list *cmd)
 {
 	int	fd;
 	
+	
+	while (cmd->prev && cmd->prev->type != PIPE)
+		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{
 		if (cmd->type == RED_IN)
@@ -120,14 +125,16 @@ int	find_redirin(t_command_list *cmd)
 				cmd->command[0]);
 				return (-1);
 			}
-			
 			if (cmd->next == NULL || cmd->next->type == PIPE )
 				return (fd);
-			close(fd);
+			if (cmd->next->type != COMMAND)
+				close(fd);
 
 		}
 		cmd = cmd->next;
 	}
+	if (fd)
+		return (fd);
 	return (0);
 
 }
@@ -149,7 +156,6 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 	pid[i] = fork();
 		if (pid[i] == 0)
 		{
-			
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
 			fd_in = find_redirin(cmd);
