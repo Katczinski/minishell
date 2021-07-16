@@ -12,12 +12,12 @@
 # include <errno.h>
 # include "libft.h"
 
-# define COMMAND 111;
-# define BUILT_IN 112;
-# define RED_IN 113;
-# define DRED_IN 114;
-# define RED_OUT 115;
-# define DRED_OUT 116;
+# define COMMAND 111
+# define BUILT_IN 112
+# define RED_IN 113
+# define DRED_IN 114
+# define RED_OUT 115
+# define DRED_OUT 116
 
 typedef struct s_command_list
 {

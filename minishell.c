@@ -30,8 +30,6 @@ void	ft_free(void)
 			free(g_all.args->head->command[i++]);
 		if (g_all.args->head->command)
 			free(g_all.args->head->command);
-		if (g_all.args->head->file_name)
-			free(g_all.args->head->file_name);
 		temp = g_all.args->head;
 		g_all.args->head = g_all.args->head->next; 
 		free(temp);
@@ -109,11 +107,20 @@ void	close_fd(int (*fd)[2])
 
 void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 {
+	t_command_list	*red_in;
 	pid[i] = fork();
+	red_in = cmd;
 		if (pid[i] == 0)
 		{
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
+			while (red_in->next && red_in->next->type == RED_IN)
+				red_in = red_in->next;
+			if (red_in->type == RED_IN)
+			{
+				fd[i-1][0] = open(red_in->command[0], O_RDONLY, 0644);
+				dup2(fd[i-1][0], STDIN_FILENO);
+			}
 			if (cmd->next != NULL)
 				dup2(fd[i][1], STDOUT_FILENO);
 			close_fd(fd);
@@ -139,7 +146,8 @@ int	execute(char **envp)
 	}
 	while (cmd)
 	{
-		get_binary(cmd);
+		if (!cmd->type)
+			get_binary(cmd);
 		if (g_all.binary)
 			child(fd, cmd, pid, i, envp);
 		i++;
@@ -159,6 +167,7 @@ void	loop(int argc, char **argv, char **envp)
 	(void)argc;
 	(void)argv;
 	(void)envp;
+	using_history();
 	while (g_all.status)
 	{
 		signal(SIGINT, sigint_handler);
