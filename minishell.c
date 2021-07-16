@@ -105,25 +105,63 @@ void	close_fd(int (*fd)[2])
 	}
 }
 
+int	find_redirin(t_command_list *cmd)
+{
+	int	fd;
+	
+	while (cmd && cmd->type != PIPE)
+	{
+		if (cmd->type == RED_IN)
+		{
+			fd = open(cmd->command[0], O_RDONLY, 0644);
+			if (fd < 0)
+			{
+				printf("cat: %s: No such file or directory\n",
+				cmd->command[0]);
+				return (-1);
+			}
+			
+			if (cmd->next == NULL || cmd->next->type == PIPE )
+				return (fd);
+			close(fd);
+
+		}
+		cmd = cmd->next;
+	}
+	return (0);
+
+}
+
+int	next_cmd(t_command_list *cmd)
+{
+	while (cmd && cmd->type != PIPE)
+		cmd = cmd->next;
+	if (cmd && cmd->type == PIPE)
+		return (1);
+	return (0);
+}
+
 void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 {
-	t_command_list	*red_in;
+	int		fd_in;
+	
+	fd_in = 0;
 	pid[i] = fork();
-	red_in = cmd;
 		if (pid[i] == 0)
 		{
+			
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
-			while (red_in->next && red_in->next->type == RED_IN)
-				red_in = red_in->next;
-			if (red_in->type == RED_IN)
-			{
-				fd[i-1][0] = open(red_in->command[0], O_RDONLY, 0644);
-				dup2(fd[i-1][0], STDIN_FILENO);
-			}
-			if (cmd->next != NULL)
+			fd_in = find_redirin(cmd);
+			if (fd_in >= 0)
+				dup2(fd_in, STDIN_FILENO);
+			else
+				exit(EXIT_FAILURE);
+			if (next_cmd(cmd))
 				dup2(fd[i][1], STDOUT_FILENO);
 			close_fd(fd);
+			if (fd_in)
+				close(fd_in);
 			execve(g_all.binary, cmd->command, envp);
 		}
 }
@@ -146,11 +184,15 @@ int	execute(char **envp)
 	}
 	while (cmd)
 	{
-		if (!cmd->type)
+		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if (g_all.binary)
+		if (g_all.binary && cmd->type == COMMAND)
+		{
 			child(fd, cmd, pid, i, envp);
-		i++;
+			free(g_all.binary);
+			g_all.binary = 0;
+			i++;
+		}
 		cmd = cmd->next;
 	}
 	close_fd(fd);
