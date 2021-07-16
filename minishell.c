@@ -29,7 +29,7 @@ void	ft_free(void)
 			&& g_all.args->head->command[i])
 			free(g_all.args->head->command[i++]);
 		if (g_all.args->head->command)
-			free(g_all.args->head->command);
+			free(g_all.args->head->command); // double free here
 		if (g_all.binary)
 			free(g_all.binary);
 		temp = g_all.args->head;
@@ -116,8 +116,6 @@ int	find_redirin(t_command_list *cmd)
 		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{
-		
-		printf("%s\n", cmd->command[0]);
 		if (cmd->type == RED_IN)
 		{
 			fd = open(cmd->command[0], O_RDONLY, 0644);
@@ -131,7 +129,6 @@ int	find_redirin(t_command_list *cmd)
 				return (fd);
 			if (cmd->next->type != COMMAND)
 				close(fd);
-
 		}
 		cmd = cmd->next;
 	}
@@ -232,14 +229,10 @@ void	loop(int argc, char **argv, char **envp)
 		{
 			add_history(line);
 			g_all.args = parser(line, envp);
-<<<<<<< HEAD
-=======
-			// printf("here\n");
->>>>>>> f16e5087cd7920024ae46813dfbd2aea8176b0af
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
-				ft_free();
+	//			ft_free();
 			}
 		}
 		free(line);
