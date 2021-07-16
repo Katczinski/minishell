@@ -73,7 +73,7 @@ static int	line_check(char *line, t_info *info)
 			dquotes = 1;
         else if (line[i] == '\"' && dquotes && !quotes)
             dquotes = 0;
-        else if ((line[i] == '|' || line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
+        else if (line[i] == '|' && !quotes && !dquotes)
             info->elements++;
 		if ((line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
 			redirects = redirects_check(line, i);
@@ -280,7 +280,8 @@ char	*add_red_in(char *line, int *i, t_info *info)
 	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	add_element(init_element(info), info);
+	if (output[0] != '<')
+		add_element(init_element(info), info);
 	free(file_name);
 	return (output);
 }
@@ -305,7 +306,8 @@ char *treat_redirect(char *line, int *i, t_info *info)
 	info->tail->type = type;
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if ((type == RED_IN || type == DRED_IN) && (!info->tail->prev || info->tail->prev->type == PIPE))
+	if ((type == RED_IN || type == DRED_IN) && (!info->tail->prev || info->tail->prev->type == PIPE
+	|| info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
 		output = add_red_in(output, i, info);
 	*i = -1;
 	free(line);
@@ -451,27 +453,27 @@ t_info *parser(char *line, char **envp)
 	set_types(info);
 
 	//
-	// int j;
-	// int f;
+	int j;
+	int f;
 
-	// f = 0;
-	// t_command_list *tmp = info->head;
-	// while (tmp)
-	// {
-	// 	printf("node: %d\n", ++f);
-	// 	printf("type %d\n", tmp->type);
-	// 	j = 0;
-	// 	if (tmp->command)
-	// 	{
-	// 		while (tmp->command[j])
-	// 		{
-	// 			printf("%s\n", tmp->command[j]);
-	// 			j++;
-	// 		}
-	// 	}
-	// 	printf("------\n");
-	// 	tmp = tmp->next;
-	// }
+	f = 0;
+	t_command_list *tmp = info->head;
+	while (tmp)
+	{
+		printf("node: %d\n", ++f);
+		printf("type %d\n", tmp->type);
+		j = 0;
+		if (tmp->command)
+		{
+			while (tmp->command[j])
+			{
+				printf("%s\n", tmp->command[j]);
+				j++;
+			}
+		}
+		printf("------\n");
+		tmp = tmp->next;
+	}
 	//
 	return (info);
 }
