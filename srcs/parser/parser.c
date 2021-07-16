@@ -280,7 +280,7 @@ char	*add_red_in(char *line, int *i, t_info *info)
 	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if (output[0] != '<')
+	if (output[0] && output[0] != '<')
 		add_element(init_element(info), info);
 	free(file_name);
 	return (output);
@@ -339,8 +339,12 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			return (0);
 		}	
 	}
-	info->tail->lines++;
-	return (1);
+	if ((*output)[0])
+	{
+		info->tail->lines++;
+		return (1);
+	}
+	return (0);
 }
 
 char *treat_space(char *line, int *i, char **envp, t_info *info)

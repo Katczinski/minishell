@@ -230,7 +230,7 @@ void	loop(int argc, char **argv, char **envp)
 		{
 			add_history(line);
 			g_all.args = parser(line, envp);
-			printf("here\n");
+			// printf("here\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
