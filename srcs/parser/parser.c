@@ -15,7 +15,7 @@ int	redirects_check(char *line, int i)
 	{
 		if (ft_isalnum(line[i]) && out)
 			out = 0;
-		else if (ft_isalnum(line[i]) && out)
+		else if (ft_isalnum(line[i]) && in)
 			in = 0;
 		if (line[i] == '\'' || line[i] == '\"' || line[i] == '|')
 			break ;
