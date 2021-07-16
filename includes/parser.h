@@ -12,12 +12,19 @@
 # include <errno.h>
 # include "libft.h"
 
-# define COMMAND 111
-# define BUILT_IN 112
+# define COMMAND 105
+# define ECHO 106
+# define CD 107
+# define PWD 108
+# define EXPORT 109
+# define UNSET 110
+# define ENV 111
+# define EXIT 112
 # define RED_IN 113
 # define DRED_IN 114
 # define RED_OUT 115
 # define DRED_OUT 116
+# define PIPE 117
 
 typedef struct s_command_list
 {
@@ -26,6 +33,7 @@ typedef struct s_command_list
 	// char				*file_name;
 	int					lines;
 	struct	s_command_list	*next;
+	struct	s_command_list	*prev;
 }   				t_command_list;
 
 typedef struct s_info

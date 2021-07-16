@@ -233,38 +233,80 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
     return (output);
 }
 
+int find_red_in(char *line)
+{
+	int i;
+
+	i = 0;
+	ft_skip_whitespaces(&i, line);
+	if (line[i] == '<')
+		return (1);
+	return (0);
+}
+
 char	*treat_pipe(char *line, int *i, t_info *info)
 {
 	char	*output;
 
 	if (line[*i] == '|')
 		*i = (*i) + 1;
+	add_element(init_element(info), info);
+	info->tail->type = PIPE;
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	add_element(init_element(info), info);
+	if (!find_red_in(output))
+		add_element(init_element(info), info);
 	*i = -1;
 	free(line);
 	return (output);
 }
 
-char *treat_redirect(char *line, int *i, t_info *info)
+char	*add_red_in(char *line, int *i, t_info *info)
 {
+	// int start;
+	char *file_name;
 	char *output;
 
+	// while (line[*i] == '<')
+	// 	(*i)++;
+	// ft_skip_whitespaces(i, line);
+	// start = *i;
+	*i = 0;
+	while (line[(*i)] && ft_isalnum(line[*i]))
+		(*i)++;
+	file_name = malloc(sizeof(char) * (*i + 1));
+	file_name = ft_memcpy(file_name, line, *i);
+	info->tail->lines++;
+	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
+	ft_skip_whitespaces(i, line);
+	output = ft_strdup(line + *i);
 	add_element(init_element(info), info);
+	free(file_name);
+	return (output);
+}
+
+char *treat_redirect(char *line, int *i, t_info *info)
+{
+	char	*output;
+	int		type;
+
 	if (line[*i] == '>' && line[*i + 1] != '>')
-		info->tail->type = RED_OUT;
-	if (line[*i] == '>' && line[*i + 1] == '>')
-		info->tail->type = DRED_OUT;
-	if (line[*i] == '<' && line[*i + 1] != '<')
-		info->tail->type = RED_IN;
-	if (line[*i] == '<' && line[*i + 1] == '<')
-		info->tail->type = DRED_IN;
+		type = RED_OUT;
+	else if (line[*i] == '>' && line[*i + 1] == '>')
+		type = DRED_OUT;
+	else if (line[*i] == '<' && line[*i + 1] != '<')
+		type = RED_IN;
+	else if (line[*i] == '<' && line[*i + 1] == '<')
+		type = DRED_IN;
 	(*i)++;
 	if (line[*i] == '>' || line[*i] == '<')
 		(*i)++;
+	add_element(init_element(info), info);
+	info->tail->type = type;
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
+	if ((type == RED_IN || type == DRED_IN) && (!info->tail->prev || info->tail->prev->type == PIPE))
+		output = add_red_in(output, i, info);
 	*i = -1;
 	free(line);
 	return (output);
@@ -339,48 +381,41 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	return (output);
 }
 
-// char	*treat_redirect(char *line, int *i, t_info *info)
-// {
-// 	char	*output;
-// 	char	*file_name;
-// 	int		start;
+void	set_types(t_info *info)
+{
+	t_command_list *tmp;
 
-// 	if (line[(*i) - 1] == '>' && line[*i] != '>')
-// 	{
-// 		ft_skip_whitespaces(i, line);
-// 		start = *i;
-// 		if (line[*i] == '\"')
-// 		{
-// 			start++;
-// 			output = treat_quote(line, *i);
-// 		}
-// 		file_name = malloc(sizeof(char) * (*i - start + 1));
-// 		if (!file_name)
-// 		{
-// 			print_error(strerror(errno), info);
-// 			return (0);
-// 		}
-// 		file_name = ft_memcpy(file_name, line + start, *i - start);
-// 		if (file_name[0])
-// 			add_element(init_element(info), info);
-// 		}
-// 	}
-
-
-// 	return (output);
-// }
+	tmp = info->head;
+	while (tmp)
+	{
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "echo", ft_strlen(tmp->command[0])))
+			tmp->type = ECHO;
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "cd", ft_strlen(tmp->command[0])))
+			tmp->type = CD;
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "pwd", ft_strlen(tmp->command[0])))
+			tmp->type = PWD;
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "export", ft_strlen(tmp->command[0])))
+			tmp->type = EXPORT;
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "unset", ft_strlen(tmp->command[0])))
+			tmp->type = UNSET;
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "env", ft_strlen(tmp->command[0])))
+			tmp->type = ENV;
+		if (!tmp->type && !ft_strncmp(tmp->command[0], "exit", ft_strlen(tmp->command[0])))
+			tmp->type = EXIT;
+		if (!tmp->type)
+			tmp->type = COMMAND;
+		tmp = tmp->next;
+	}
+}
 
 t_info *parser(char *line, char **envp)
 {
 	t_info *info;
 	info = init_struct();
     int i;
-    // char **arr;
 
     if (line_check(line, info))
 		return (0);
-    // if ((ncomands = comands_counter(line)) == -1)
-		// print_error("Wrong syntax\n", info);
     i = -1;
     while(line[++i])
     {
@@ -408,8 +443,13 @@ t_info *parser(char *line, char **envp)
  		// printf("line: %d\n", i);
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
-	// if (ft_strchr(line, '|'))
-	// 	arr = split_by_pipe(line);
+	else if (line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
+	{
+		info->tail->lines++;
+		info->tail->command = add_line_to_cmd(line, info->tail, info);
+	}
+	set_types(info);
+
 	//
 	// int j;
 	// int f;
@@ -421,22 +461,17 @@ t_info *parser(char *line, char **envp)
 	// 	printf("node: %d\n", ++f);
 	// 	printf("type %d\n", tmp->type);
 	// 	j = 0;
-	// 	while (tmp->command[j])
+	// 	if (tmp->command)
 	// 	{
-	// 		printf("%s\n", tmp->command[j]);
-	// 		j++;
+	// 		while (tmp->command[j])
+	// 		{
+	// 			printf("%s\n", tmp->command[j]);
+	// 			j++;
+	// 		}
 	// 	}
+	// 	printf("------\n");
 	// 	tmp = tmp->next;
 	// }
-	//
- 	// printf("line: %s\n", line);
-	// new_line = ft_split_modified(line);
-	// new_line = check_tabs(new_line);
-	// envp[0] = 0;
-	//
-	// int j = -1;
-	// while (new_line[++j])
-	// 	printf("%s\n", new_line[j]);
 	//
 	return (info);
 }

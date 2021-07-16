@@ -15,6 +15,7 @@ t_command_list	*init_element(t_info *info)
 	// element->file_name = 0;
 	element->lines = 0;
 	element->next = 0;
+	element->prev = 0;
 	return (element);
 }
 
@@ -28,6 +29,7 @@ void	add_element(t_command_list *element, t_info *info)
 	else
 	{
 		info->tail->next = element;
+		element->prev = info->tail;
 		info->tail = element;
 	}
 }
