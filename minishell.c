@@ -116,6 +116,8 @@ int	find_redirin(t_command_list *cmd)
 		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{
+		
+		printf("%s\n", cmd->command[0]);
 		if (cmd->type == RED_IN)
 		{
 			fd = open(cmd->command[0], O_RDONLY, 0644);
@@ -126,7 +128,10 @@ int	find_redirin(t_command_list *cmd)
 				return (-1);
 			}
 			if (cmd->next == NULL || cmd->next->type == PIPE )
+			{
+
 				return (fd);
+			}
 			if (cmd->next->type != COMMAND)
 				close(fd);
 
@@ -230,7 +235,6 @@ void	loop(int argc, char **argv, char **envp)
 		{
 			add_history(line);
 			g_all.args = parser(line, envp);
-			printf("here\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
