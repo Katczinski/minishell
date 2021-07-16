@@ -128,10 +128,7 @@ int	find_redirin(t_command_list *cmd)
 				return (-1);
 			}
 			if (cmd->next == NULL || cmd->next->type == PIPE )
-			{
-
 				return (fd);
-			}
 			if (cmd->next->type != COMMAND)
 				close(fd);
 
@@ -235,6 +232,10 @@ void	loop(int argc, char **argv, char **envp)
 		{
 			add_history(line);
 			g_all.args = parser(line, envp);
+<<<<<<< HEAD
+=======
+			// printf("here\n");
+>>>>>>> f16e5087cd7920024ae46813dfbd2aea8176b0af
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
