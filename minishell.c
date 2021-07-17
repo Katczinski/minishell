@@ -107,7 +107,7 @@ void	close_fd(int (*fd)[2])
 	}
 }
 
-int	find_redirin(t_command_list *cmd)
+int	find_redirin(t_command_list *cmd, int type,int flags)
 {
 	int	fd;
 	
@@ -116,9 +116,9 @@ int	find_redirin(t_command_list *cmd)
 		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{
-		if (cmd->type == RED_IN)
+		if (cmd->type == type)
 		{
-			fd = open(cmd->command[0], O_RDONLY, 0644);
+			fd = open(cmd->command[0], flags, 0644);
 			if (fd < 0)
 			{
 				printf("cat: %s: No such file or directory\n",
@@ -150,6 +150,7 @@ int	next_cmd(t_command_list *cmd)
 void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 {
 	int		fd_in;
+	int		fd_out;
 	
 	fd_in = 0;
 	pid[i] = fork();
@@ -157,16 +158,21 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		{
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
-			fd_in = find_redirin(cmd);
+			fd_in = find_redirin(cmd, RED_IN, O_RDONLY);
 			if (fd_in >= 0)
 				dup2(fd_in, STDIN_FILENO);
 			else
 				exit(EXIT_FAILURE);
 			if (next_cmd(cmd))
 				dup2(fd[i][1], STDOUT_FILENO);
+			fd_out = find_redirin(cmd, RED_OUT, O_WRONLY | O_CREAT | O_TRUNC);
+			if (fd_out >= 0)
+				dup2(fd_out, STDOUT_FILENO);
+			else
+				exit(EXIT_FAILURE);
+			if (fd_out)
+				close(fd_out);
 			close_fd(fd);
-			if (fd_in)
-				close(fd_in);
 			execve(g_all.binary, cmd->command, envp);
 		}
 }
