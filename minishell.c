@@ -166,9 +166,9 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			if (next_cmd(cmd))
 				dup2(fd[i][1], STDOUT_FILENO);
 			fd_out = find_redirin(cmd, RED_OUT, O_WRONLY | O_CREAT | O_TRUNC);
-			if (fd_out >= 0)
+			if (fd_out > 0)
 				dup2(fd_out, STDOUT_FILENO);
-			else
+			else if (fd_out < 0)
 				exit(EXIT_FAILURE);
 			if (fd_out)
 				close(fd_out);
