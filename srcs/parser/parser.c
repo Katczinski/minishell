@@ -280,7 +280,7 @@ char	*add_red_in(char *line, int *i, t_info *info)
 	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if (output[0] && output[0] != '<')
+	if (output[0] && output[0] != '<' && output[0] != '|')
 		add_element(init_element(info), info);
 	free(file_name);
 	return (output);
@@ -291,6 +291,7 @@ char *treat_redirect(char *line, int *i, t_info *info)
 	char	*output;
 	int		type;
 
+	type = 0;
 	if (line[*i] == '>' && line[*i + 1] != '>')
 		type = RED_OUT;
 	else if (line[*i] == '>' && line[*i + 1] == '>')
@@ -352,6 +353,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	char *output;
 	char *prev_str;
 
+	prev_str = 0;
 	// printf("before removing space: %s\n", line);
 	if (line[(*i) - 1])
 		prev_str = malloc(sizeof(char) * (*i + 1));

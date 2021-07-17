@@ -11,9 +11,9 @@ OBJS = $(patsubst %.c,%.o,$(SRCS))
 
 NAME = minishell
 
-INC = -Iincludes -Ilibft
+INC = -Iincludes -Ilibft -I /usr/local/Cellar/readline/8.1/include
 
-LIBS = -lreadline -ltermcap -Llibft -lft
+LIBS = -lreadline -ltermcap -Llibft -lft -L /usr/local/Cellar/readline/8.1/lib
 
 FLAGS = -Wall -Wextra -Werror
 
@@ -21,7 +21,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 		make -C ./libft
-		gcc $(FLAGS) -g $(OBJS) -o $(NAME) $(INC) $(LIBS)
+		gcc $(FLAGS) -g $(OBJS) -o $(NAME) $(INC) $(LIBS) 
 
 %.o: %.c
 		gcc $(FLAGS) -g $(INC) -c $< -o $@
