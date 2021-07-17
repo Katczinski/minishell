@@ -107,10 +107,9 @@ void	close_fd(int (*fd)[2])
 	}
 }
 
-int	find_redirin(t_command_list *cmd, int type,int flags)
+int	find_redir(t_command_list *cmd, int type,int flags)
 {
 	int	fd;
-	
 	
 	while (cmd->prev && cmd->prev->type != PIPE)
 		cmd = cmd->prev;
@@ -158,14 +157,14 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		{
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
-			fd_in = find_redirin(cmd, RED_IN, O_RDONLY);
+			fd_in = find_redir(cmd, RED_IN, O_RDONLY);
 			if (fd_in >= 0)
 				dup2(fd_in, STDIN_FILENO);
 			else
 				exit(EXIT_FAILURE);
 			if (next_cmd(cmd))
 				dup2(fd[i][1], STDOUT_FILENO);
-			fd_out = find_redirin(cmd, RED_OUT, O_WRONLY | O_CREAT | O_TRUNC);
+			fd_out = find_redir(cmd, RED_OUT, O_WRONLY | O_CREAT | O_TRUNC);
 			if (fd_out > 0)
 				dup2(fd_out, STDOUT_FILENO);
 			else if (fd_out < 0)
@@ -235,7 +234,7 @@ void	loop(int argc, char **argv, char **envp)
 		{
 			add_history(line);
 			g_all.args = parser(line, envp);
-			// printf("here\n");
+//			printf("here\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
