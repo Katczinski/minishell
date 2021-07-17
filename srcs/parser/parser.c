@@ -421,7 +421,6 @@ t_info *parser(char *line, char **envp)
 	t_info *info;
 	info = init_struct();
     int i;
-
     if (line_check(line, info))
 		return (0);
     i = -1;
@@ -451,7 +450,7 @@ t_info *parser(char *line, char **envp)
  		// printf("line: %d\n", i);
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
-	else if (line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
+	else if (info->tail->prev && line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
