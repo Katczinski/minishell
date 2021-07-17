@@ -29,7 +29,7 @@ void	ft_free(void)
 			&& g_all.args->head->command[i])
 			free(g_all.args->head->command[i++]);
 		if (g_all.args->head->command)
-			free(g_all.args->head->command); // double free here
+			free(g_all.args->head->command);
 		if (g_all.binary)
 			free(g_all.binary);
 		temp = g_all.args->head;
@@ -238,10 +238,10 @@ void	loop(int argc, char **argv, char **envp)
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
-	//			ft_free();
+				ft_free();
 			}
 		}
-		free(line);
+//		free(line);  // double free
 	}
 }
 
