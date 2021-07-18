@@ -1,5 +1,5 @@
-#ifndef SHELLY_H
-# define SHELLY_H
+#ifndef PARSER_H
+# define PARSER_H
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 4096
 # endif
@@ -13,13 +13,13 @@
 # include "libft.h"
 
 # define COMMAND 105
-# define ECHO 106
-# define CD 107
-# define PWD 108
-# define EXPORT 109
-# define UNSET 110
-# define ENV 111
-# define EXIT 112
+# define FT_ECHO 106
+# define FT_CD 107
+# define FT_PWD 108
+# define FT_EXPORT 109
+# define FT_UNSET 110
+# define FT_ENV 111
+# define FT_EXIT 112
 # define RED_IN 113
 # define DRED_IN 114
 # define RED_OUT 115

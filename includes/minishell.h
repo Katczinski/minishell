@@ -3,6 +3,7 @@
 
 # include "libft.h"
 # include "parser.h"
+# include "builtins.h"
 # include <unistd.h>
 # include <term.h>
 # include <termios.h>

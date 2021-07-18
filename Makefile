@@ -2,6 +2,7 @@ SRCS = minishell.c\
 	srcs/parser/create_list.c\
 	srcs/parser/init.c\
 	srcs/parser/parser.c\
+	srcs/builtins/ft_echo.c\
 	srcs/utils/ft_split_modified.c\
 	srcs/utils/get_next_line.c\
 	srcs/utils/print_error.c\

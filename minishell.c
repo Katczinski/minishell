@@ -246,6 +246,8 @@ int	execute(char **envp)
 			g_all.binary = 0;
 			i++;
 		}
+		if (cmd->type == FT_ECHO)
+			ft_echo(cmd);
 		cmd = cmd->next;
 	}
 	close_fd(fd);

@@ -406,19 +406,19 @@ void	set_types(t_info *info)
 	while (tmp)
 	{
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "echo", ft_strlen(tmp->command[0])))
-			tmp->type = ECHO;
+			tmp->type = FT_ECHO;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "cd", ft_strlen(tmp->command[0])))
-			tmp->type = CD;
+			tmp->type = FT_CD;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "pwd", ft_strlen(tmp->command[0])))
-			tmp->type = PWD;
+			tmp->type = FT_PWD;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "export", ft_strlen(tmp->command[0])))
-			tmp->type = EXPORT;
+			tmp->type = FT_EXPORT;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "unset", ft_strlen(tmp->command[0])))
-			tmp->type = UNSET;
+			tmp->type = FT_UNSET;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "env", ft_strlen(tmp->command[0])))
-			tmp->type = ENV;
+			tmp->type = FT_ENV;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "exit", ft_strlen(tmp->command[0])))
-			tmp->type = EXIT;
+			tmp->type = FT_EXIT;
 		if (!tmp->type)
 			tmp->type = COMMAND;
 		tmp = tmp->next;
@@ -491,7 +491,6 @@ t_info *parser(char *line, char **envp)
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
-
 	// print_list(info);	
 		
 	return (info);
