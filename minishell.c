@@ -192,39 +192,47 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 {
 	int		fd_in;
 	int		fd_out;
-	
-	fd_in = 0;
-	pid[i] = fork();
-		if (pid[i] == 0)
-		{
-			if (i != 0)
-				dup2(fd[i - 1][0], STDIN_FILENO);
-			fd_in = find_redir(cmd, RED_IN);
-			if (fd_in >= 0)
-				dup2(fd_in, STDIN_FILENO);
-			else
-				exit(EXIT_FAILURE);
-			if (next_cmd(cmd))
-				dup2(fd[i][1], STDOUT_FILENO);
-			fd_out = find_redir(cmd, RED_OUT);
-			if (fd_out > 0)
-				dup2(fd_out, STDOUT_FILENO);
-			else if (fd_out < 0)
-				exit(EXIT_FAILURE);
-			if (fd_out)
-				close(fd_out);
-			if (fd_in)
-				close(fd_in);
-			close_fd(fd);
-			if (cmd->type == COMMAND)
-				execve(g_all.binary, cmd->command, envp);
-			else if (cmd->type == FT_ECHO)
-			{	
-				ft_echo(cmd);
-				exit(1);
-			}
+	int		std_in;
+	int		std_out;
 
-		}
+	std_in = dup(STDIN_FILENO);
+	std_out = dup(STDOUT_FILENO);	
+	fd_in = 0;
+	fd_out = 0;
+	fd_in = find_redir(cmd, RED_IN);
+	if (fd_in >= 0)
+		dup2(fd_in, STDIN_FILENO);
+	fd_out = find_redir(cmd, RED_OUT);
+	if (fd_out > 0)
+		dup2(fd_out, STDOUT_FILENO);
+	if (fd_in)
+		close(fd_in);
+	if (fd_out)
+		close(fd_out);
+	pid[i] = fork();
+	if (pid[i] == 0)
+	{
+		if (cmd->type != COMMAND)
+			exit(1);
+		if (i != 0 && fd_in == 0)
+			dup2(fd[i - 1][0], STDIN_FILENO);
+		if (next_cmd(cmd))
+			dup2(fd[i][1], STDOUT_FILENO);
+		close_fd(fd);
+		execve(g_all.binary, cmd->command, envp);
+		exit(1);
+	}
+	else if (pid[i])
+	{
+		if (i != 0 && fd_in == 0)
+			dup2(fd[i - 1][0], STDIN_FILENO);
+		if (next_cmd(cmd))
+			dup2(fd[i][1], STDOUT_FILENO);
+		if (cmd->type == FT_ECHO)
+			ft_echo(cmd);
+		dup2(std_in, STDIN_FILENO);
+		dup2(std_out, STDOUT_FILENO);
+	}
 }
 
 
