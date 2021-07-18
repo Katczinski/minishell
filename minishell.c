@@ -213,6 +213,8 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 				exit(EXIT_FAILURE);
 			if (fd_out)
 				close(fd_out);
+			if (fd_in)
+				close(fd_in);
 			close_fd(fd);
 			execve(g_all.binary, cmd->command, envp);
 		}
@@ -221,8 +223,6 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 
 int	execute(char **envp)
 {
-	
-	(void)envp;
 	t_command_list	*cmd;
 	cmd = g_all.args->head;
 	int	pid[g_all.args->elements];
@@ -256,12 +256,10 @@ int	execute(char **envp)
 
 }
 
-void	loop(int argc, char **argv, char **envp)
+void	loop(char **envp)
 {
 	char	*line;
-	(void)argc;
-	(void)argv;
-	(void)envp;
+	
 	using_history();
 	while (g_all.status)
 	{
@@ -304,7 +302,8 @@ char	**get_path(char **envp)
 int	main(int argc, char **argv, char **envp)
 {
 	char	*term_name;
-	
+	(void)argc;
+	(void)argv;	
 
 	tcgetattr(STDIN_FILENO, &g_all.saved);
 	term_name = "xterm-256color";
@@ -318,6 +317,6 @@ int	main(int argc, char **argv, char **envp)
 	g_all.term.c_lflag &= ~(ECHOCTL);
 	tcsetattr(0, TCSANOW, &g_all.term);
 	tgetent(0, term_name);
-	loop(argc, argv, envp);
+	loop(envp);
 	return (1);
 }
