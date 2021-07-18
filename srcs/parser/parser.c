@@ -228,7 +228,7 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
 	if (!output)
 		print_error(strerror(errno), info);
 	// printf("char is %c\n", output[5]);
-	*i = (*i) - 1;
+	*i = (*i) - 2;
 	free(line);
     return (output);
 }
@@ -261,7 +261,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	return (output);
 }
 
-char	*add_red_in(char *line, int *i, t_info *info)
+char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 {
 	// int start;
 	char *file_name;
@@ -272,8 +272,14 @@ char	*add_red_in(char *line, int *i, t_info *info)
 	// ft_skip_whitespaces(i, line);
 	// start = *i;
 	*i = 0;
-	while (line[(*i)] && ft_isalnum(line[*i]))
+	while (line[(*i)] && line[*i] != ' ' && line[*i] != '<' && line[*i] != '>' && && line[*i] != '|')
+	{
+		if (line[*i] == '\'')
+			line = treat_quote(line, i);
+		else if (line[*i] == '\"')
+			line = treat_dquote(line, i, envp, info);
 		(*i)++;
+	}
 	file_name = malloc(sizeof(char) * (*i + 1));
 	file_name = ft_memcpy(file_name, line, *i);
 	info->tail->lines++;
@@ -286,7 +292,7 @@ char	*add_red_in(char *line, int *i, t_info *info)
 	return (output);
 }
 
-char *treat_redirect(char *line, int *i, t_info *info)
+char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 {
 	char	*output;
 	int		type;
@@ -309,7 +315,7 @@ char *treat_redirect(char *line, int *i, t_info *info)
 	output = ft_strdup(line + *i);
 	if ((type == RED_IN || type == DRED_IN) && (!info->tail->prev || info->tail->prev->type == PIPE
 	|| info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
-		output = add_red_in(output, i, info);
+		output = add_red_in(output, i, envp, info);
 	*i = -1;
 	free(line);
 	return (output);
@@ -327,7 +333,7 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			// break ;
 		}
 		if ((*output)[*i] == '<' || (*output)[*i] == '>')
-			*output = treat_redirect(*output, i, info);
+			*output = treat_redirect(*output, i, envp, info);
 		if ((*output)[*i] == '\'')
 			*output = treat_quote(*output, i);
 		if ((*output)[*i] == '\"')
@@ -439,7 +445,7 @@ t_info *parser(char *line, char **envp)
 		if (line[i] == '|')
 			line = treat_pipe(line, &i, info);
 		if (line[i] == '<' || line[i] == '>')
-			line = treat_redirect(line, &i, info);
+			line = treat_redirect(line, &i, envp, info);
         // printf("line: %s\n", line);
     }
 	if (line[i - 1] && !info->head)
@@ -457,28 +463,28 @@ t_info *parser(char *line, char **envp)
 	}
 	set_types(info);
 
-	
-/*	 int j;
-	 int f;
+//	
+	//  int j;
+	//  int f;
 
-	 f = 0;
-	 t_command_list *tmp = info->head;
-	 while (tmp)
-	 {
-	 	printf("node: %d\n", ++f);
-	 	printf("type %d\n", tmp->type);
-	 	j = 0;
-	 	if (tmp->command)
-	 	{
-	 		while (tmp->command[j])
-	 		{
-	 			printf("%s\n", tmp->command[j]);
-	 			j++;
-	 		}
-	 	}
-	 	printf("------\n");
-	 	tmp = tmp->next;
-	 }
-*/	
+	//  f = 0;
+	//  t_command_list *tmp = info->head;
+	//  while (tmp)
+	//  {
+	//  	printf("node: %d\n", ++f);
+	//  	printf("type %d\n", tmp->type);
+	//  	j = 0;
+	//  	if (tmp->command)
+	//  	{
+	//  		while (tmp->command[j])
+	//  		{
+	//  			printf("%s\n", tmp->command[j]);
+	//  			j++;
+	//  		}
+	//  	}
+	//  	printf("------\n");
+	//  	tmp = tmp->next;
+	//  }
+//	
 	return (info);
 }
