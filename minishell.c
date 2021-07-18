@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <sys/stat.h>
-#include <sys/wait.h>
 
 t_all	g_all;
 
@@ -111,12 +109,15 @@ int	find_redir(t_command_list *cmd, int type,int flags)
 {
 	int	fd;
 	
+	fd = 0;
 	while (cmd->prev && cmd->prev->type != PIPE)
 		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{
 		if (cmd->type == type)
 		{
+			if (fd)
+				close(fd);
 			fd = open(cmd->command[0], flags, 0644);
 			if (fd < 0)
 			{
@@ -126,8 +127,6 @@ int	find_redir(t_command_list *cmd, int type,int flags)
 			}
 			if (cmd->next == NULL || cmd->next->type == PIPE )
 				return (fd);
-			if (cmd->next->type != COMMAND)
-				close(fd);
 		}
 		cmd = cmd->next;
 	}
@@ -194,6 +193,7 @@ int	execute(char **envp)
 	}
 	while (cmd)
 	{
+
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
 		if (g_all.binary && cmd->type == COMMAND)
@@ -233,7 +233,9 @@ void	loop(int argc, char **argv, char **envp)
 		if (line[0] != '\0')
 		{
 			add_history(line);
+		//	printf("parsing...\n");
 			g_all.args = parser(line, envp);
+		//	printf("executing...\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
