@@ -216,7 +216,14 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			if (fd_in)
 				close(fd_in);
 			close_fd(fd);
-			execve(g_all.binary, cmd->command, envp);
+			if (cmd->type == COMMAND)
+				execve(g_all.binary, cmd->command, envp);
+			else if (cmd->type == FT_ECHO)
+			{	
+				ft_echo(cmd);
+				exit(1);
+			}
+
 		}
 }
 
@@ -239,16 +246,14 @@ int	execute(char **envp)
 
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if (g_all.binary && cmd->type == COMMAND)
+		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO)
 		{
 			child(fd, cmd, pid, i, envp);
 			free(g_all.binary);
 			g_all.binary = 0;
 			i++;
 		}
-		if (cmd->type == FT_ECHO)
-			ft_echo(cmd);
-		cmd = cmd->next;
+			cmd = cmd->next;
 	}
 	close_fd(fd);
 	for (int j = 0; j < g_all.args->elements; j++)
