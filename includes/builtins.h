@@ -15,6 +15,7 @@
 
 //ECHO
 int	ft_echo(t_command_list *list);
+int ft_pwd(t_info *info);
 
 
 #endif

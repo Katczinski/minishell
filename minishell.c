@@ -163,8 +163,8 @@ int	redir_in(t_command_list *cmd)
 	if (fd)
 		return (fd);
 	return (0);
-
 }
+
 int	find_redir(t_command_list *cmd, int type)
 {
 	int fd;
@@ -230,6 +230,8 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			dup2(fd[i][1], STDOUT_FILENO);
 		if (cmd->type == FT_ECHO)
 			ft_echo(cmd);
+		if (cmd->type == FT_PWD)
+			ft_pwd(g_all.args);
 		dup2(std_in, STDIN_FILENO);
 		dup2(std_out, STDOUT_FILENO);
 	}
@@ -254,7 +256,7 @@ int	execute(char **envp)
 
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO)
+		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD)
 		{
 			child(fd, cmd, pid, i, envp);
 			free(g_all.binary);
@@ -289,9 +291,9 @@ void	loop(char **envp)
 		if (line[0] != '\0')
 		{
 			add_history(line);
-		//	printf("parsing...\n");
+			// printf("parsing...\n");
 			g_all.args = parser(line, envp);
-		//	printf("executing...\n");
+			// printf("executing...\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
