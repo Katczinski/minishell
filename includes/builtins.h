@@ -10,7 +10,7 @@
 // # include <readline/readline.h>
 // # include <readline/history.h>
 // # include <errno.h>
-// # include "libft.h"
+# include <dirent.h>
 # include "minishell.h"
 
 //ECHO
