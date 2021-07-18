@@ -278,6 +278,8 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 			line = treat_quote(line, i);
 		else if (line[*i] == '\"')
 			line = treat_dquote(line, i, envp, info);
+		else if (line[*i] == '$')
+			line = treat_env(line, i, envp);
 		(*i)++;
 	}
 	file_name = malloc(sizeof(char) * (*i + 1));
@@ -286,7 +288,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if (output[0] && output[0] != '<' && output[0] != '|')
+	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
 		add_element(init_element(info), info);
 	free(file_name);
 	return (output);
@@ -313,8 +315,9 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	info->tail->type = type;
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if ((type == RED_IN || type == DRED_IN) && (!info->tail->prev || info->tail->prev->type == PIPE
-	|| info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
+	if ((type == RED_IN || type == DRED_IN || type == RED_OUT || type == DRED_OUT) && (!info->tail->prev
+	|| info->tail->prev->type == PIPE || info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT))
 		output = add_red_in(output, i, envp, info);
 	*i = -1;
 	free(line);
@@ -403,19 +406,19 @@ void	set_types(t_info *info)
 	while (tmp)
 	{
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "echo", ft_strlen(tmp->command[0])))
-			tmp->type = ECHO;
+			tmp->type = FT_ECHO;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "cd", ft_strlen(tmp->command[0])))
-			tmp->type = CD;
+			tmp->type = FT_CD;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "pwd", ft_strlen(tmp->command[0])))
-			tmp->type = PWD;
+			tmp->type = FT_PWD;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "export", ft_strlen(tmp->command[0])))
-			tmp->type = EXPORT;
+			tmp->type = FT_EXPORT;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "unset", ft_strlen(tmp->command[0])))
-			tmp->type = UNSET;
+			tmp->type = FT_UNSET;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "env", ft_strlen(tmp->command[0])))
-			tmp->type = ENV;
+			tmp->type = FT_ENV;
 		if (!tmp->type && !ft_strncmp(tmp->command[0], "exit", ft_strlen(tmp->command[0])))
-			tmp->type = EXIT;
+			tmp->type = FT_EXIT;
 		if (!tmp->type)
 			tmp->type = COMMAND;
 		tmp = tmp->next;
@@ -481,14 +484,14 @@ t_info *parser(char *line, char **envp)
  		// printf("line: %d\n", i);
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
-	else if (info->tail->prev && line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
+	else if (info->tail->prev && line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT))
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
-
-//	print_list(info);	
+	// print_list(info);	
 		
 	return (info);
 }
