@@ -272,7 +272,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	// ft_skip_whitespaces(i, line);
 	// start = *i;
 	*i = 0;
-	while (line[(*i)] && line[*i] != ' ' && line[*i] != '<' && line[*i] != '>' && && line[*i] != '|')
+	while (line[(*i)] && line[*i] != ' ' && line[*i] != '<' && line[*i] != '>' && line[*i] != '|')
 	{
 		if (line[*i] == '\'')
 			line = treat_quote(line, i);
