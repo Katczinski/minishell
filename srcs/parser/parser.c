@@ -422,6 +422,31 @@ void	set_types(t_info *info)
 	}
 }
 
+void	print_list(t_info *info)
+{
+	int j;
+	int f;
+
+	f = 0;
+	t_command_list *tmp = info->head;
+	while (tmp)
+	{
+		printf("node: %d\n", ++f);
+	  	printf("type %d\n", tmp->type);
+		j = 0;
+		if (tmp->command)
+		{
+			while (tmp->command[j])
+			{
+				printf("%s\n", tmp->command[j]);
+				j++;
+			}
+		}
+		printf("------\n");
+		tmp = tmp->next;
+	}
+}
+
 t_info *parser(char *line, char **envp)
 {
 	t_info *info;
@@ -463,28 +488,7 @@ t_info *parser(char *line, char **envp)
 	}
 	set_types(info);
 
-//	
-	//  int j;
-	//  int f;
-
-	//  f = 0;
-	//  t_command_list *tmp = info->head;
-	//  while (tmp)
-	//  {
-	//  	printf("node: %d\n", ++f);
-	//  	printf("type %d\n", tmp->type);
-	//  	j = 0;
-	//  	if (tmp->command)
-	//  	{
-	//  		while (tmp->command[j])
-	//  		{
-	//  			printf("%s\n", tmp->command[j]);
-	//  			j++;
-	//  		}
-	//  	}
-	//  	printf("------\n");
-	//  	tmp = tmp->next;
-	//  }
-//	
+//	print_list(info);	
+		
 	return (info);
 }

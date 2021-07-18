@@ -105,20 +105,21 @@ void	close_fd(int (*fd)[2])
 	}
 }
 
-int	find_redir(t_command_list *cmd, int type,int flags)
+int	redir_out(t_command_list *cmd)
 {
 	int	fd;
 	
 	fd = 0;
-	while (cmd->prev && cmd->prev->type != PIPE)
-		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{
-		if (cmd->type == type)
+		if (cmd->type == RED_OUT || cmd->type == DRED_OUT)
 		{
 			if (fd)
 				close(fd);
-			fd = open(cmd->command[0], flags, 0644);
+			if (cmd->type == RED_OUT)
+				fd = open(cmd->command[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			else
+				fd = open(cmd->command[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if (fd < 0)
 			{
 				printf("cat: %s: No such file or directory\n",
@@ -134,6 +135,48 @@ int	find_redir(t_command_list *cmd, int type,int flags)
 		return (fd);
 	return (0);
 
+}
+
+int	redir_in(t_command_list *cmd)
+{
+	int	fd;
+	
+	fd = 0;
+	while (cmd && cmd->type != PIPE)
+	{
+		if (cmd->type == RED_IN)
+		{
+			if (fd)
+				close(fd);
+			fd = open(cmd->command[0], O_RDONLY, 0644);
+			if (fd < 0)
+			{
+				printf("cat: %s: No such file or directory\n",
+				cmd->command[0]);
+				return (-1);
+			}
+			if (cmd->next == NULL || cmd->next->type == PIPE )
+				return (fd);
+		}
+		cmd = cmd->next;
+	}
+	if (fd)
+		return (fd);
+	return (0);
+
+}
+int	find_redir(t_command_list *cmd, int type)
+{
+	int fd;
+
+	fd = 0;
+	while (cmd->prev && cmd->prev->type != PIPE)
+		cmd = cmd->prev;
+	if (type == RED_OUT)
+		fd = redir_out(cmd);
+	else if (type == RED_IN)
+		fd = redir_in(cmd);
+	return (fd);
 }
 
 int	next_cmd(t_command_list *cmd)
@@ -156,14 +199,14 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		{
 			if (i != 0)
 				dup2(fd[i - 1][0], STDIN_FILENO);
-			fd_in = find_redir(cmd, RED_IN, O_RDONLY);
+			fd_in = find_redir(cmd, RED_IN);
 			if (fd_in >= 0)
 				dup2(fd_in, STDIN_FILENO);
 			else
 				exit(EXIT_FAILURE);
 			if (next_cmd(cmd))
 				dup2(fd[i][1], STDOUT_FILENO);
-			fd_out = find_redir(cmd, RED_OUT, O_WRONLY | O_CREAT | O_TRUNC);
+			fd_out = find_redir(cmd, RED_OUT);
 			if (fd_out > 0)
 				dup2(fd_out, STDOUT_FILENO);
 			else if (fd_out < 0)
