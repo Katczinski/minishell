@@ -278,6 +278,8 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 			line = treat_quote(line, i);
 		else if (line[*i] == '\"')
 			line = treat_dquote(line, i, envp, info);
+		else if (line[*i] == '$')
+			line = treat_env(line, i, envp);
 		(*i)++;
 	}
 	file_name = malloc(sizeof(char) * (*i + 1));
@@ -286,7 +288,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if (output[0] && output[0] != '<' && output[0] != '|')
+	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
 		add_element(init_element(info), info);
 	free(file_name);
 	return (output);
@@ -313,8 +315,9 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	info->tail->type = type;
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
-	if ((type == RED_IN || type == DRED_IN) && (!info->tail->prev || info->tail->prev->type == PIPE
-	|| info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
+	if ((type == RED_IN || type == DRED_IN || type == RED_OUT || type == DRED_OUT) && (!info->tail->prev
+	|| info->tail->prev->type == PIPE || info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT))
 		output = add_red_in(output, i, envp, info);
 	*i = -1;
 	free(line);
@@ -481,14 +484,15 @@ t_info *parser(char *line, char **envp)
  		// printf("line: %d\n", i);
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
-	else if (info->tail->prev && line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN))
+	else if (info->tail->prev && line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT))
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
 
-//	print_list(info);	
+	// print_list(info);	
 		
 	return (info);
 }
