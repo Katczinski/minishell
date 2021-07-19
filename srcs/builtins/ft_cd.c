@@ -2,7 +2,6 @@
 
 static int	go_home(char **path, char **envp, t_info *info)
 {
-	// char	**arr;
 	char	*home_dir;
 	int		i;
 

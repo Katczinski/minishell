@@ -331,9 +331,9 @@ void	loop(char **envp)
 		if (line[0] != '\0')
 		{
 			add_history(line);
-//			printf("parsing...\n");
+			// printf("parsing...\n");
 			g_all.args = parser(line, envp);
-//			printf("executing...\n");
+			// printf("executing...\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);

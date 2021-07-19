@@ -485,13 +485,13 @@ t_info *parser(char *line, char **envp)
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	else if (info->tail->prev && line[i - 1] && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
-	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT))
+	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT || info->tail->prev->type == PIPE))
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
-	// print_list(info);	
+	print_list(info);	
 		
 	return (info);
 }
