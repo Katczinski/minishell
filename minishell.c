@@ -202,9 +202,13 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 	fd_in = find_redir(cmd, RED_IN);
 	if (fd_in >= 0)
 		dup2(fd_in, STDIN_FILENO);
+	else
+		return ;
 	fd_out = find_redir(cmd, RED_OUT);
 	if (fd_out > 0)
 		dup2(fd_out, STDOUT_FILENO);
+	else if (fd_out < 0)
+		return ;
 	if (fd_in)
 		close(fd_in);
 	if (fd_out)
