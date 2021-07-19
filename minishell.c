@@ -137,6 +137,31 @@ int	redir_out(t_command_list *cmd)
 
 }
 
+int	dredir_in(t_command_list *cmd)
+{
+	int 	fd;
+	char	*line;
+
+	fd = open(".heredoc", O_RDWR | O_CREAT | O_TRUNC, 0644);
+	while (1)
+	{
+		line = readline("> ");
+		if (!line)
+			break ;
+		if (ft_strcmp(line, cmd->command[0]))
+		{
+			ft_putendl_fd(line, fd);
+			free(line);
+		}
+		else
+		{
+			free(line);
+			return (fd);
+		}
+	}
+	return (fd);
+}
+
 int	redir_in(t_command_list *cmd)
 {
 	int	fd;
@@ -144,11 +169,14 @@ int	redir_in(t_command_list *cmd)
 	fd = 0;
 	while (cmd && cmd->type != PIPE)
 	{
-		if (cmd->type == RED_IN)
+		if (cmd->type == RED_IN || cmd->type == DRED_IN)
 		{
 			if (fd)
 				close(fd);
-			fd = open(cmd->command[0], O_RDONLY, 0644);
+			if (cmd->type == RED_IN)
+				fd = open(cmd->command[0], O_RDONLY, 0644);
+			else
+				fd = dredir_in(cmd);
 			if (fd < 0)
 			{
 				printf("cat: %s: No such file or directory\n",
@@ -194,7 +222,9 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 	int		fd_out;
 	int		std_in;
 	int		std_out;
-
+	struct stat	*stats;
+	
+	stats = (struct stat*)malloc(sizeof(struct stat));
 	std_in = dup(STDIN_FILENO);
 	std_out = dup(STDOUT_FILENO);	
 	fd_in = 0;
@@ -224,7 +254,6 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			dup2(fd[i][1], STDOUT_FILENO);
 		close_fd(fd);
 		execve(g_all.binary, cmd->command, envp);
-		exit(1);
 	}
 	else if (pid[i])
 	{
@@ -238,6 +267,11 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			ft_pwd(g_all.args);
 		dup2(std_in, STDIN_FILENO);
 		dup2(std_out, STDOUT_FILENO);
+		close(std_in);
+		close(std_out);
+		if (!stat(".heredoc", stats))
+			unlink(".heredoc");
+		free(stats);
 	}
 }
 
@@ -260,7 +294,7 @@ int	execute(char **envp)
 
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD)
+		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD || (i == 0 && cmd->type == DRED_IN))
 		{
 			child(fd, cmd, pid, i, envp);
 			free(g_all.binary);
@@ -295,9 +329,9 @@ void	loop(char **envp)
 		if (line[0] != '\0')
 		{
 			add_history(line);
-			// printf("parsing...\n");
+//			printf("parsing...\n");
 			g_all.args = parser(line, envp);
-			// printf("executing...\n");
+//			printf("executing...\n");
 			if (g_all.args)
 			{
 				g_all.status = execute(envp);
