@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/06/09 18:04:18 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:51:15 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ int	dredir_in(t_command_list *cmd)
 	int 	fd;
 	char	*line;
 
-	fd = open(".heredoc", O_RDWR | O_CREAT | O_TRUNC, 0644);
+	fd = open(".heredoc", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	while (1)
 	{
 		line = readline("> ");
@@ -156,9 +156,13 @@ int	dredir_in(t_command_list *cmd)
 		else
 		{
 			free(line);
+			close(fd);
+			fd = open(".heredoc", O_RDONLY, 0644);
 			return (fd);
 		}
 	}
+	close(fd);
+	fd = open(".heredoc", O_RDONLY, 0644);
 	return (fd);
 }
 
@@ -239,11 +243,7 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		dup2(fd_out, STDOUT_FILENO);
 	else if (fd_out < 0)
 		return ;
-	if (fd_in)
-		close(fd_in);
-	if (fd_out)
-		close(fd_out);
-	pid[i] = fork();
+		pid[i] = fork();
 	if (pid[i] == 0)
 	{
 		if (cmd->type != COMMAND)
@@ -271,6 +271,11 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		dup2(std_out, STDOUT_FILENO);
 		close(std_in);
 		close(std_out);
+		if (fd_in)
+			close(fd_in);
+		if (fd_out)
+			close(fd_out);
+
 		if (!stat(".heredoc", stats))
 			unlink(".heredoc");
 		free(stats);
@@ -296,7 +301,7 @@ int	execute(char **envp)
 
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD || cmd->type == FT_CD || (i == 0 && cmd->type == DRED_IN))
+		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD || cmd->type == FT_CD || cmd->type == DRED_IN)
 		{
 			child(fd, cmd, pid, i, envp);
 			free(g_all.binary);
