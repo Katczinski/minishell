@@ -265,6 +265,8 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			ft_echo(cmd);
 		if (cmd->type == FT_PWD)
 			ft_pwd(g_all.args);
+		if (cmd->type == FT_CD)
+			ft_cd(g_all.args->head, envp, g_all.args);
 		dup2(std_in, STDIN_FILENO);
 		dup2(std_out, STDOUT_FILENO);
 		close(std_in);
@@ -294,7 +296,7 @@ int	execute(char **envp)
 
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD || (i == 0 && cmd->type == DRED_IN))
+		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD || cmd->type == FT_CD || (i == 0 && cmd->type == DRED_IN))
 		{
 			child(fd, cmd, pid, i, envp);
 			free(g_all.binary);
