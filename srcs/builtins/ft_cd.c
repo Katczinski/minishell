@@ -17,7 +17,7 @@ static int	go_home(char **path, char **envp, t_info *info)
 		i++;
 	}
 	if (!home_dir)
-		return (print_error("cd: HOME is not set", info));
+		return (print_error("minishell: cd: HOME not set", info));
 	while (*home_dir != '=')
 		home_dir++;
 	home_dir++;
@@ -44,5 +44,7 @@ int ft_cd(t_command_list *list, char **envp, t_info *info)
 		if (chdir(path) == -1)
 			return(print_error(strerror(errno), info));
 	}
+	else
+		return(print_error("minishell: cd: to many arguments", info));
 	return (ret);
 }
