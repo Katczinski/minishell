@@ -266,7 +266,9 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		if (cmd->type == FT_PWD)
 			ft_pwd(g_all.args);
 		if (cmd->type == FT_CD)
-			ft_cd(g_all.args->head, envp, g_all.args);
+			ft_cd(cmd, envp, g_all.args);
+		if (cmd->type == FT_EXPORT)
+			ft_export(cmd, envp, g_all.args);
 		dup2(std_in, STDIN_FILENO);
 		dup2(std_out, STDOUT_FILENO);
 		close(std_in);

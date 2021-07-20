@@ -61,7 +61,7 @@ static int	line_check(char *line, t_info *info)
 	redirects = 0;
     if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
 	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t')
-		return (print_error("Wrong syntax\n", info));
+		return (print_error("Wrong syntax", info));
 	info->elements++;
     while (line[++i])
     {
@@ -81,7 +81,7 @@ static int	line_check(char *line, t_info *info)
 			break ;
     }
     if ((!line[i] && (quotes || dquotes)) || skip_whitespaces(i, line) || redirects)
-		return (print_error("Wrong syntax\n", info));
+		return (print_error("Wrong syntax", info));
 	return (0);
 }
 

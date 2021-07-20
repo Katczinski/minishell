@@ -17,5 +17,6 @@
 int	ft_echo(t_command_list *list);
 int ft_pwd(t_info *info);
 int ft_cd(t_command_list *list, char **envp, t_info *info);
+int ft_export(t_command_list *list, char **envp, t_info *info);
 
 #endif
