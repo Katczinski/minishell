@@ -268,7 +268,7 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		if (cmd->type == FT_CD)
 			ft_cd(cmd, envp, g_all.args);
 		if (cmd->type == FT_EXPORT)
-			ft_export(cmd, envp, g_all.args);
+			g_all.envp = ft_export(cmd, g_all.envp, g_all.args);
 		dup2(std_in, STDIN_FILENO);
 		dup2(std_out, STDOUT_FILENO);
 		close(std_in);
@@ -328,7 +328,7 @@ int	execute(char **envp)
 
 }
 
-void	loop(char **envp)
+void	loop()
 {
 	char	*line;
 	
@@ -347,11 +347,11 @@ void	loop(char **envp)
 		{
 			add_history(line);
 			// printf("parsing...\n");
-			g_all.args = parser(line, envp);
+			g_all.args = parser(line, g_all.envp);
 			// printf("executing...\n");
 			if (g_all.args)
 			{
-				g_all.status = execute(envp);
+				g_all.status = execute(g_all.envp);
 				ft_free();
 			}
 		}
@@ -371,16 +371,40 @@ char	**get_path(char **envp)
 	return (path);
 }
 
+char **save_envp(char **envp)
+{
+	int i;
+	char **new_envp;
+
+	i = 0;
+	while (envp[i])
+		i++;
+	new_envp = malloc(sizeof(char *) * (i + 1));
+	new_envp[i] = 0;
+	i = -1;
+	while (envp[++i])
+		new_envp[i] = strdup(envp[i]);
+	// envp++;
+	// new_envp = malloc(sizeof(char *) * (4));
+	// new_envp[3] = 0;
+	// new_envp[0] = strdup("a=1");
+	// new_envp[1] = strdup("b=2");
+	// new_envp[2] = strdup("PATH=/home");
+
+	return (new_envp);
+}
+
 int	main(int argc, char **argv, char **envp)
 {
 	char	*term_name;
 	(void)argc;
-	(void)argv;	
+	(void)argv;
 
 	tcgetattr(STDIN_FILENO, &g_all.saved);
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
-	g_all.path = get_path(envp);
+	g_all.envp = save_envp(envp);
+	g_all.path = get_path(g_all.envp);
 	if (g_all.path == 0)
 		return (0);
 	g_all.status = 1;
@@ -389,6 +413,6 @@ int	main(int argc, char **argv, char **envp)
 	g_all.term.c_lflag &= ~(ECHOCTL);
 	tcsetattr(0, TCSANOW, &g_all.term);
 	tgetent(0, term_name);
-	loop(envp);
+	loop();
 	return (1);
 }

@@ -28,6 +28,7 @@ typedef struct	s_all
 	int		pid_count;
 	int		exit_status;
 	char		**path;
+	char		**envp;
 	char		*binary;
 	t_info		*args;
 }			t_all;
