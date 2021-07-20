@@ -20,8 +20,6 @@
 # include <errno.h>
 # include <string.h>
 
-
-
 typedef struct	s_all
 {
 	struct termios	term;

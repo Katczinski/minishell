@@ -243,7 +243,7 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 		dup2(fd_out, STDOUT_FILENO);
 	else if (fd_out < 0)
 		return ;
-		pid[i] = fork();
+	pid[i] = fork();
 	if (pid[i] == 0)
 	{
 		if (cmd->type != COMMAND)
@@ -282,6 +282,14 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 	}
 }
 
+int	is_builtin(int type)
+{
+	if (type == FT_ECHO || type == FT_PWD || type == FT_CD
+	|| type == FT_EXPORT || type == FT_UNSET || type == FT_ENV
+	|| type == FT_EXIT || type == DRED_IN)
+		return (1);
+	return (0);
+}
 
 int	execute(char **envp)
 {
@@ -301,7 +309,7 @@ int	execute(char **envp)
 
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
-		if ((g_all.binary && cmd->type == COMMAND) || cmd->type == FT_ECHO || cmd->type == FT_PWD || cmd->type == FT_CD || cmd->type == DRED_IN)
+		if ((g_all.binary && cmd->type == COMMAND) || is_builtin(cmd->type))
 		{
 			child(fd, cmd, pid, i, envp);
 			free(g_all.binary);
