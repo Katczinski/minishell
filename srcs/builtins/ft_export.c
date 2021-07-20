@@ -146,6 +146,7 @@ int	change_value(char *env_name, char *cmd, char **envp, t_info *info)
 			// tmp = ft_strjoin(env_name, "=");
 			// new_value = ft_strjoin(tmp, env_value);	
 			// envp[i] = new_value;
+			free(envp[i]);
 			envp[i] = ft_strdup(cmd);
 			if (!envp[i])
 				return(print_error(strerror(errno), info));
