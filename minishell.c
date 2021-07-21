@@ -23,6 +23,7 @@ int	is_builtin(int type)
 	return (0);
 }
 
+
 void	ft_free(void)
 {
 	int		i;
@@ -277,17 +278,17 @@ void	exec_builtin(int (*fd)[2], int i, char **envp)
 		dup2(fd[i - 1][0], STDIN_FILENO);
 	if (next_cmd(g_all.cmd))
 		dup2(fd[i][1], STDOUT_FILENO);
-	if (cmd->type == FT_ECHO)
-		ft_echo(cmd);
-	if (cmd->type == FT_PWD)
+	if (g_all.cmd->type == FT_ECHO)
+		ft_echo(g_all.cmd);
+	if (g_all.cmd->type == FT_PWD)
 		ft_pwd(g_all.args);
-	if (cmd->type == FT_CD)
-		ft_cd(cmd, envp, g_all.args);
-	if (cmd->type == FT_EXPORT)
-		g_all.envp = ft_export(cmd, g_all.envp, g_all.args);
-	if (cmd->type == FT_UNSET)
-		g_all.envp = ft_unset(cmd, g_all.envp, g_all.args);
-	if (cmd->type == FT_ENV)
+	if (g_all.cmd->type == FT_CD)
+		ft_cd(g_all.cmd, envp, g_all.args);
+	if (g_all.cmd->type == FT_EXPORT)
+		g_all.envp = ft_export(g_all.cmd, g_all.envp, g_all.args);
+	if (g_all.cmd->type == FT_UNSET)
+		g_all.envp = ft_unset(g_all.cmd, g_all.envp, g_all.args);
+	if (g_all.cmd->type == FT_ENV)
 		ft_env(g_all.envp);	
 }
 
@@ -324,7 +325,6 @@ void	exec(int (*fd)[2], int pid, int i, char **envp)
 	std_in = dup(STDIN_FILENO);
 	std_out = dup(STDOUT_FILENO);	
 	pid = fork();
-	
 	if (pid == 0)
 		exec_bin(fd, i, envp);
 	else if (pid)
@@ -445,7 +445,7 @@ void	loop(char **envp)
 //			printf("executing...\n");
 			if (g_all.args)
 			{
-				g_all.status = execute(envp);
+				g_all.status = execute(g_all.envp);
 				ft_free();
 			}
 		}
@@ -465,16 +465,40 @@ char	**get_path(char **envp)
 	return (path);
 }
 
+char **save_envp(char **envp)
+{
+	int i;
+	char **new_envp;
+
+	i = 0;
+	while (envp[i])
+		i++;
+	new_envp = malloc(sizeof(char *) * (i + 1));
+	new_envp[i] = 0;
+	i = -1;
+	while (envp[++i])
+		new_envp[i] = strdup(envp[i]);
+	// envp++;
+	// new_envp = malloc(sizeof(char *) * (4));
+	// new_envp[3] = 0;
+	// new_envp[0] = strdup("a=1");
+	// new_envp[1] = strdup("b=2");
+	// new_envp[2] = strdup("PATH=/home");
+
+	return (new_envp);
+}
+
 int	main(int argc, char **argv, char **envp)
 {
 	char	*term_name;
 	(void)argc;
-	(void)argv;	
+	(void)argv;
 
 	tcgetattr(STDIN_FILENO, &g_all.saved);
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
-	g_all.path = get_path(envp);
+	g_all.envp = save_envp(envp);
+	g_all.path = get_path(g_all.envp);
 	if (g_all.path == 0)
 		return (0);
 	g_all.status = 1;

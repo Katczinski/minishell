@@ -14,8 +14,12 @@
 # include "parser.h"
 // # include "minishell.h"
 
-int	ft_echo(t_command_list *list);
-int ft_pwd(t_info *info);
-int ft_cd(t_command_list *list, char **envp, t_info *info);
+int		ft_echo(t_command_list *list);
+int 	ft_pwd(t_info *info);
+int		ft_cd(t_command_list *list, char **envp, t_info *info);
+char	**ft_export(t_command_list *list, char **envp, t_info *info);
+char	**ft_unset(t_command_list *list, char **envp, t_info *info);
+int		find_envp(char *name, char **envp);
+int		ft_env(char **envp);
 
 #endif

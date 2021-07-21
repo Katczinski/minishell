@@ -20,8 +20,6 @@
 # include <errno.h>
 # include <string.h>
 
-
-
 typedef struct	s_all
 {
 	struct termios	term;
@@ -29,6 +27,7 @@ typedef struct	s_all
 	int		status;
 	int		exit_status;
 	char		**path;
+	char		**envp;
 	char		*binary;
 	int		fd_in;
 	int		fd_out;

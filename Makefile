@@ -5,6 +5,9 @@ SRCS = minishell.c\
 	srcs/builtins/ft_echo.c\
 	srcs/builtins/ft_cd.c\
 	srcs/builtins/ft_pwd.c\
+	srcs/builtins/ft_export.c\
+	srcs/builtins/ft_unset.c\
+	srcs/builtins/ft_env.c\
 	srcs/utils/ft_split_modified.c\
 	srcs/utils/get_next_line.c\
 	srcs/utils/print_error.c\
