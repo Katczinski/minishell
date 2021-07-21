@@ -27,11 +27,13 @@ typedef struct	s_all
 	struct termios	term;
 	struct termios	saved;
 	int		status;
-	int		pid_count;
 	int		exit_status;
 	char		**path;
 	char		*binary;
+	int		fd_in;
+	int		fd_out;
 	t_info		*args;
+	t_command_list	*cmd;
 }			t_all;
 
 
