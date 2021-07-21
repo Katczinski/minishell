@@ -269,6 +269,10 @@ void	child(int (*fd)[2], t_command_list *cmd, int *pid, int i, char **envp)
 			ft_cd(cmd, envp, g_all.args);
 		if (cmd->type == FT_EXPORT)
 			g_all.envp = ft_export(cmd, g_all.envp, g_all.args);
+		if (cmd->type == FT_UNSET)
+			g_all.envp = ft_unset(cmd, g_all.envp, g_all.args);
+		if (cmd->type == FT_ENV)
+			ft_env(g_all.envp);
 		dup2(std_in, STDIN_FILENO);
 		dup2(std_out, STDOUT_FILENO);
 		close(std_in);

@@ -197,6 +197,13 @@ char **create_envp(char *cmd, char **envp, t_info *info)
 			// return (0);
 		// }
 	}
+	i = -1;
+	if (new_envp)
+	{
+		while (envp[++i])
+			free(envp[i]);
+		free(envp);
+	}
 	return (new_envp);
 }
 
@@ -219,7 +226,7 @@ char **add_envp(char **cmd, char **envp, t_info *info)
 	int i;
 	char *env_name;
 	// char *new_value;
-	char **new_envp;
+	// char **new_envp;
 
 	i = 0;
 	env_name = 0;
@@ -229,25 +236,19 @@ char **add_envp(char **cmd, char **envp, t_info *info)
 		env_name = save_name(cmd[i], info);
 		// new_value = save_value(cmd[i], info);
 		if (find_envp(env_name, envp))
-		{
 			change_value(env_name, cmd[i], envp, info);
-			return (envp);
-		}
 		else
 		{
 			if (value_found(cmd[i]))
-				new_envp = create_envp(cmd[i], envp, info);
+				envp = create_envp(cmd[i], envp, info);
 		}
 		free(env_name);
 		// free(new_value);
 	}
 	//
-	i = -1;
-	while (envp[++i])
-		free(envp[i]);
-	free(envp);
+	
 	//
-	return (new_envp);
+	return (envp);
 }
 
 char **ft_export(t_command_list *list, char **envp, t_info *info)
