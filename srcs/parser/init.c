@@ -1,6 +1,6 @@
 #include "parser.h"
 
-t_info	*init_struct(void)
+t_info	*init_struct(int status)
 {
 	t_info *info;
 
@@ -10,5 +10,6 @@ t_info	*init_struct(void)
 	info->head = 0;
 	info->tail = 0;
 	info->elements = 0;
+	info->status = status;
 	return (info);
 }

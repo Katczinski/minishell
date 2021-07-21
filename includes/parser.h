@@ -40,6 +40,7 @@ typedef struct s_info
 {
     t_command_list		*head;
     t_command_list		*tail;
+	int					status;
     int				elements;
 }  				t_info;
 
@@ -52,8 +53,8 @@ int				skip_whitespaces(int i, char *line);
 char	    			**ft_split_modified(char const *s);
 
 //Parsing
-t_info  		       	 *init_struct(void);
-t_info 				*parser(char *line, char **envp);
+t_info	*init_struct(int status);
+t_info 				*parser(char *line, char **envp, int status);
 t_command_list			*init_element(t_info *info);
 void				add_element(t_command_list *element, t_info *info);
 char				**add_line_to_cmd(char *line, t_command_list *cmd, t_info *info);

@@ -8,6 +8,7 @@ SRCS = minishell.c\
 	srcs/builtins/ft_export.c\
 	srcs/builtins/ft_unset.c\
 	srcs/builtins/ft_env.c\
+	srcs/builtins/ft_exit.c\
 	srcs/utils/ft_split_modified.c\
 	srcs/utils/get_next_line.c\
 	srcs/utils/print_error.c\

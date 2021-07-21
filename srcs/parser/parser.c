@@ -60,7 +60,7 @@ static int	line_check(char *line, t_info *info)
     dquotes = 0;
 	redirects = 0;
     if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
-	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t')
+	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/')
 		return (print_error("Wrong syntax", info));
 	info->elements++;
     while (line[++i])
@@ -117,7 +117,7 @@ char	**check_tabs(char **line)
 //     return (output);
 // }
 
-char *treat_env(char *line, int *i, char **envp)
+char *treat_env(char *line, int *i, char **envp, t_info *info)
 {
     int start;
     int j;
@@ -128,7 +128,7 @@ char *treat_env(char *line, int *i, char **envp)
 	char *output;
 
     start = *i;
-    if (line[start + 1] != '_' && !ft_isalnum(line[start + 1]))
+    if (line[start + 1] != '_' && line[start + 1] != '?' && !ft_isalnum(line[start + 1]))
         return (line);
     prev_str = malloc(sizeof(char) * (*i + 1));
     prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
@@ -154,6 +154,8 @@ char *treat_env(char *line, int *i, char **envp)
             break ;
         }
     }
+	if (key[0] == '?' && !key[1])
+		curr_str = ft_itoa(info->status);
 	if (!curr_str && !envp[j])
 		return (ft_strjoin(prev_str, next_str));
 	output = ft_strjoin(prev_str, curr_str);
@@ -205,7 +207,7 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
     while (line[++(*i)])
     {
 		if (line[*i] == '$')
-			line = treat_env(line, i, envp);
+			line = treat_env(line, i, envp, info);
 		// if (line[*i] == ' ')
 		// 	line[*i] = '\a';
         if (line[*i] == '\"')
@@ -279,7 +281,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 		else if (line[*i] == '\"')
 			line = treat_dquote(line, i, envp, info);
 		else if (line[*i] == '$')
-			line = treat_env(line, i, envp);
+			line = treat_env(line, i, envp, info);
 		(*i)++;
 	}
 	file_name = malloc(sizeof(char) * (*i + 1));
@@ -342,7 +344,7 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 		if ((*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 		if ((*output)[*i] == '$')
-			*output = treat_env(*output, i, envp);
+			*output = treat_env(*output, i, envp, info);
 		if ((*output)[*i] == ' ' || (*output)[*i] == '\t')
 		{
 			(*i) = (*i) - 1;
@@ -451,10 +453,10 @@ void	print_list(t_info *info)
 	}
 }
 
-t_info *parser(char *line, char **envp)
+t_info *parser(char *line, char **envp, int status)
 {
 	t_info *info;
-	info = init_struct();
+	info = init_struct(status);
     int i;
     if (line_check(line, info))
 		return (0);
@@ -468,7 +470,7 @@ t_info *parser(char *line, char **envp)
         // if (line[i] == '\\')
         //     line = backslash(line, &i);
         if (line[i] == '$')
-            line = treat_env(line, &i, envp);
+            line = treat_env(line, &i, envp, info);
 		if (line[i] == ' ' || line[i] == '\t')
 			line = treat_space(line, &i, envp, info);
 		if (line[i] == '|')
@@ -497,7 +499,7 @@ t_info *parser(char *line, char **envp)
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
-	print_list(info);	
+	// print_list(info);	
 		
 	return (info);
 }

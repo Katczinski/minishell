@@ -21,5 +21,6 @@ char	**ft_export(t_command_list *list, char **envp, t_info *info);
 char	**ft_unset(t_command_list *list, char **envp, t_info *info);
 int		find_envp(char *name, char **envp);
 int		ft_env(char **envp);
+void		ft_exit(t_command_list *list, int *exit_status, int *status);
 
 #endif

@@ -289,7 +289,9 @@ void	exec_builtin(int (*fd)[2], int i, char **envp)
 	if (g_all.cmd->type == FT_UNSET)
 		g_all.envp = ft_unset(g_all.cmd, g_all.envp, g_all.args);
 	if (g_all.cmd->type == FT_ENV)
-		ft_env(g_all.envp);	
+		ft_env(g_all.envp);
+	if (g_all.cmd->type == FT_EXIT)
+		ft_exit(g_all.cmd, &g_all.exit_status, &g_all.status);
 }
 
 void	exec_bin(int (*fd)[2], int i, char **envp)
@@ -427,7 +429,7 @@ void	loop(char **envp)
 	char	*line;
 	
 	using_history();
-	while (g_all.status)
+	while (!g_all.status)
 	{
 		signal(SIGINT, sigint_handler);
 		signal(SIGQUIT, SIG_IGN);
@@ -441,11 +443,11 @@ void	loop(char **envp)
 		{
 			add_history(line);
 //			printf("parsing...\n");
-			g_all.args = parser(line, envp);
+			g_all.args = parser(line, envp, g_all.exit_status);
 //			printf("executing...\n");
 			if (g_all.args)
 			{
-				g_all.status = execute(g_all.envp);
+				execute(g_all.envp);
 				ft_free();
 			}
 		}
@@ -501,12 +503,12 @@ int	main(int argc, char **argv, char **envp)
 	g_all.path = get_path(g_all.envp);
 	if (g_all.path == 0)
 		return (0);
-	g_all.status = 1;
+	g_all.status = 0;
 	rl_event_hook = event;
 	g_all.term.c_lflag &= ~(ISIG);	
 	g_all.term.c_lflag &= ~(ECHOCTL);
 	tcsetattr(0, TCSANOW, &g_all.term);
 	tgetent(0, term_name);
 	loop(envp);
-	return (1);
+	return (g_all.exit_status);
 }
