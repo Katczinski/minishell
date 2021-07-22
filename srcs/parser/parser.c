@@ -60,7 +60,7 @@ static int	line_check(char *line, t_info *info)
     dquotes = 0;
 	redirects = 0;
     if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
-	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/')
+	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/' && line[0] != '$')
 		return (print_error("Wrong syntax", info));
 	info->elements++;
     while (line[++i])
@@ -147,6 +147,7 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
 	curr_str = 0;
     while (envp[++j])
     {
+		// printf("%s\n", envp[j]);
         if (!ft_strncmp(key, envp[j], ft_strlen(key)) && envp[j][ft_strlen(key)] == '=')
         {
             curr_str = malloc(sizeof(char) * (ft_strlen(envp[j]) - ft_strlen(key)) + 1);
@@ -157,9 +158,14 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
 	if (key[0] == '?' && !key[1])
 		curr_str = ft_itoa(info->status);
 	if (!curr_str && !envp[j])
+	{
+		*i = start;
 		return (ft_strjoin(prev_str, next_str));
+	}
 	output = ft_strjoin(prev_str, curr_str);
 	output = ft_strjoin(output, next_str);
+	if (curr_str)
+		*i = ft_strlen(curr_str) - 1;
     return (output);
 }
 
@@ -499,7 +505,11 @@ t_info *parser(char *line, char **envp, int status)
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
+<<<<<<< HEAD
 	//print_list(info);	
 		
+=======
+	// print_list(info);
+>>>>>>> c66e5690c68260296a9cc55392529a213877d710
 	return (info);
 }

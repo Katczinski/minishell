@@ -23,7 +23,6 @@ int	is_builtin(int type)
 	return (0);
 }
 
-
 void	ft_free(void)
 {
 	int		i;
@@ -325,7 +324,11 @@ void	exit_child(void)
 		{
 			printf("minishell: permission denied: %s\n", g_all.cmd->command[0]);
 			exit(126);
+<<<<<<< HEAD
 		}
+=======
+		}	
+>>>>>>> c66e5690c68260296a9cc55392529a213877d710
 	}
 	else if (g_all.cmd->command[0])
 	{
@@ -462,7 +465,7 @@ void	execute(char **envp)
 //	printf("%d\n", g_all.status);
 }
 
-void	loop(char **envp)
+void	loop(void)
 {
 	char	*line;
 	
@@ -481,9 +484,9 @@ void	loop(char **envp)
 		if (line[0] != '\0')
 		{
 			add_history(line);
-	//		printf("parsing...\n");
-			g_all.args = parser(line, envp, g_all.exit_status);
-	//		printf("executing...\n");
+//			printf("parsing...\n");
+			g_all.args = parser(line, g_all.envp, g_all.exit_status);
+//			printf("executing...\n");
 			if (g_all.args)
 			{
 				execute(g_all.envp);
@@ -549,6 +552,6 @@ int	main(int argc, char **argv, char **envp)
 	g_all.term.c_lflag &= ~(ECHOCTL);
 	tcsetattr(0, TCSANOW, &g_all.term);
 	tgetent(0, term_name);
-	loop(envp);
+	loop();
 	return (g_all.exit_status);
 }
