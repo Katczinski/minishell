@@ -255,7 +255,20 @@ int find_red_in(char *line)
 char	*treat_pipe(char *line, int *i, t_info *info)
 {
 	char	*output;
+	char	*prev_str;
 
+	if (info->tail && !info->tail->type && line[*i - 1])
+	{
+		prev_str = malloc(sizeof(char) * (*i + 1));
+		if (!prev_str)
+		{
+			print_error(strerror(errno), info);
+			return (0);
+		}
+    	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+		info->tail->lines++;
+		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
+	}
 	if (line[*i] == '|')
 		*i = (*i) + 1;
 	add_element(init_element(info), info);
@@ -305,8 +318,21 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 {
 	char	*output;
+	char	*prev_str;
 	int		type;
 
+	if (info->tail && !info->tail->type && line[*i - 1])
+	{
+		prev_str = malloc(sizeof(char) * (*i + 1));
+		if (!prev_str)
+		{
+			print_error(strerror(errno), info);
+			return (0);
+		}
+    	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+		info->tail->lines++;
+		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
+	}
 	type = 0;
 	if (line[*i] == '>' && line[*i + 1] != '>')
 		type = RED_OUT;
