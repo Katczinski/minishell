@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/19 17:51:15 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/22 15:59:27 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ void	sigint_handler(int signo)
 void	get_binary(t_command_list *cmd)
 {
 	char		*temp;
-	int		i;
+	int			i;
 	struct stat	*stats;
 
 	stats = (struct stat*)malloc(sizeof(struct stat));
@@ -87,9 +87,15 @@ void	get_binary(t_command_list *cmd)
 		g_all.binary = 0;
 		i++;
 	}
-	free(stats);
-	if (!g_all.path[i] && cmd->command[0])
+	if (!g_all.binary)
+	{
+		if (!stat(cmd->command[0], stats) && !(S_ISDIR(stats->st_mode)))
+			g_all.binary = ft_strdup(cmd->command[0]);
+	}
+	else if (!g_all.path[i] && cmd->command[0])
 		printf("%s: command not found\n", cmd->command[0]);
+	
+	free(stats);
 }
 
 int	next_cmd(t_command_list *cmd)
@@ -278,20 +284,42 @@ void	exec_builtin(int (*fd)[2], int i, char **envp)
 		dup2(fd[i - 1][0], STDIN_FILENO);
 	if (next_cmd(g_all.cmd))
 		dup2(fd[i][1], STDOUT_FILENO);
-	if (g_all.cmd->type == FT_ECHO)
-		g_all.exit_status = ft_echo(g_all.cmd);
-	if (g_all.cmd->type == FT_PWD)
-		g_all.exit_status = ft_pwd(g_all.args);
-	if (g_all.cmd->type == FT_CD)
-		g_all.exit_status = ft_cd(g_all.cmd, envp, g_all.args);
-	if (g_all.cmd->type == FT_EXPORT)
-		g_all.exit_status = ft_export(g_all.cmd, &g_all.envp, g_all.args);
-	if (g_all.cmd->type == FT_UNSET)
-		g_all.exit_status = ft_unset(g_all.cmd, &g_all.envp, g_all.args);
-	if (g_all.cmd->type == FT_ENV)
-		g_all.exit_status = ft_env(g_all.envp);
-	if (g_all.cmd->type == FT_EXIT)
-		ft_exit(g_all.cmd, &g_all.exit_status, &g_all.status);
+	if (g_all.cmd)
+	{
+		if (g_all.cmd->type == FT_ECHO)
+			g_all.exit_status = ft_echo(g_all.cmd);
+		if (g_all.cmd->type == FT_PWD)
+			g_all.exit_status = ft_pwd(g_all.args);
+		if (g_all.cmd->type == FT_CD)
+			g_all.exit_status = ft_cd(g_all.cmd, envp, g_all.args);
+		if (g_all.cmd->type == FT_EXPORT)
+			g_all.exit_status = ft_export(g_all.cmd, &g_all.envp, g_all.args);
+		if (g_all.cmd->type == FT_UNSET)
+			g_all.exit_status = ft_unset(g_all.cmd, &g_all.envp, g_all.args);
+		if (g_all.cmd->type == FT_ENV)
+			g_all.exit_status = ft_env(g_all.envp);
+		if (g_all.cmd->type == FT_EXIT)
+			ft_exit(g_all.cmd, &g_all.exit_status, &g_all.status);
+	}	
+}
+
+void	exit_child(void)
+{
+
+	struct stat	*stats;
+
+	stats = (struct stat*)malloc(sizeof(struct stat));
+	if (!stat(g_all.cmd->command[0], stats))
+	{
+		if (S_ISREG(stats->st_mode))
+			printf("minishell: permission denied: %s\n", g_all.cmd->command[0]);
+			exit(126);	
+	}
+	else if (g_all.cmd->command[0])
+	{
+			printf("%s: command not found\n", g_all.cmd->command[0]);
+			exit(127);
+	}
 }
 
 void	exec_bin(int (*fd)[2], int i, char **envp)
@@ -311,11 +339,14 @@ void	exec_bin(int (*fd)[2], int i, char **envp)
 		dup2(g_all.fd_out, STDOUT_FILENO);
 		close(g_all.fd_out);
 	}
+	
 	if (g_all.binary && g_all.cmd)
-		execve(g_all.binary, g_all.cmd->command, envp);
+	{
+		if (execve(g_all.binary, g_all.cmd->command, envp) == -1)
+			exit_child();
+	}
 	else
-		exit(1);
-
+		exit_child();
 }
 void	exec(int (*fd)[2], int pid, int i, char **envp)
 {
@@ -326,9 +357,13 @@ void	exec(int (*fd)[2], int pid, int i, char **envp)
 	stats = (struct stat*)malloc(sizeof(struct stat));
 	std_in = dup(STDIN_FILENO);
 	std_out = dup(STDOUT_FILENO);	
-	pid = fork();
+	pid = 1;
+	if (g_all.cmd && g_all.cmd->type == COMMAND)
+		pid = fork();
 	if (pid == 0)
+	{	
 		exec_bin(fd, i, envp);
+	}
 	else if (pid)
 	{
 		exec_builtin(fd, i, envp);
@@ -382,7 +417,7 @@ int	exec_node(t_command_list *cmd, int (*fd)[2], int pid, int i, char **envp)
 	return (1);
 }
 
-int	execute(char **envp)
+void	execute(char **envp)
 {
 	t_command_list	*cmd;
 	int	pid[g_all.args->elements];
@@ -400,7 +435,7 @@ int	execute(char **envp)
 			pipe(fd[j]);
 	}
 	while (cmd)
-	{
+	{	
 		if (cmd->type == COMMAND)
 			get_binary(cmd);
 		if (exec_node(cmd, fd, pid[i], i, envp) == -1)
@@ -419,9 +454,9 @@ int	execute(char **envp)
 	}
 	close_fd(fd);
 	for (int j = 0; j < g_all.args->elements; j++)
-		waitpid(pid[j], 0, 0);
-	return (1);	
-
+		waitpid(pid[j], &g_all.status, 0);
+	g_all.status = WEXITSTATUS(g_all.status);
+//	printf("%d\n", g_all.status);
 }
 
 void	loop(char **envp)
@@ -429,7 +464,8 @@ void	loop(char **envp)
 	char	*line;
 	
 	using_history();
-	while (!g_all.status)
+	
+	while (1)
 	{
 		signal(SIGINT, sigint_handler);
 		signal(SIGQUIT, SIG_IGN);
@@ -442,9 +478,9 @@ void	loop(char **envp)
 		if (line[0] != '\0')
 		{
 			add_history(line);
-//			printf("parsing...\n");
+	//		printf("parsing...\n");
 			g_all.args = parser(line, envp, g_all.exit_status);
-//			printf("executing...\n");
+	//		printf("executing...\n");
 			if (g_all.args)
 			{
 				execute(g_all.envp);
@@ -501,6 +537,7 @@ int	main(int argc, char **argv, char **envp)
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
 	g_all.path = get_path(g_all.envp);
+	g_all.status = 0;
 	if (g_all.path == 0)
 		return (0);
 	g_all.status = 0;
