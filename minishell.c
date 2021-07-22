@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/22 18:36:52 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/22 19:03:44 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,19 @@ void	sigint_handler(int signo)
 	}
 }
 
+char	**get_path(char **envp)
+{
+	char	**path;
+	
+	while (*envp != NULL && ft_strncmp(*envp, "PATH=", 5))
+		envp++;
+
+	if (*envp == NULL)
+		return (0);
+	path = ft_split(*envp + 5, ':');
+	return (path);
+}
+
 void	get_binary(t_command_list *cmd)
 {
 	char		*temp;
@@ -73,7 +86,7 @@ void	get_binary(t_command_list *cmd)
 
 	stats = (struct stat*)malloc(sizeof(struct stat));
 	i = 0;
-	while (g_all.path[i])
+	while (g_all.path && g_all.path[i])
 	{
 		temp = ft_strjoin(g_all.path[i], "/");
 		if (!temp)
@@ -93,7 +106,6 @@ void	get_binary(t_command_list *cmd)
 	}
 	else if (!g_all.path[i] && cmd->command[0])
 		printf("%s: command not found\n", cmd->command[0]);
-	
 	free(stats);
 }
 
@@ -160,6 +172,7 @@ int	dredin(t_command_list *cmd)
 	g_all.fd_in = open(".heredoc", O_RDONLY, 0644);
 	return (1);
 }
+
 int	redin(t_command_list *cmd)
 {
 
@@ -318,13 +331,16 @@ void	exit_child(void)
 	struct stat	*stats;
 
 	stats = (struct stat*)malloc(sizeof(struct stat));
-	if (!stat(g_all.cmd->command[0], stats))
+	if (!stat(g_all.cmd->command[0], stats) && g_all.path)
 	{
+		
 		if (S_ISREG(stats->st_mode))
 		{
 			printf("minishell: permission denied: %s\n", g_all.cmd->command[0]);
 			exit(126);
-		}	
+		}
+		else
+			exit(126); // for now
 	}
 	else if (g_all.cmd->command[0])
 	{
@@ -472,6 +488,9 @@ void	loop(void)
 		signal(SIGINT, sigint_handler);
 		signal(SIGQUIT, SIG_IGN);
 		line = readline("minishell> ");
+		if (g_all.path)
+			free(g_all.path);
+		g_all.path = get_path(g_all.envp);
 		if (!line)
 		{
     			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
@@ -493,17 +512,6 @@ void	loop(void)
 	}
 }
 
-char	**get_path(char **envp)
-{
-	char	**path;
-
-	while (*envp != NULL && ft_strncmp(*envp, "PATH=", 5))
-		envp++;
-	if (envp == NULL)
-		return (0);
-	path = ft_split(*envp + 5, ':');
-	return (path);
-}
 
 char **save_envp(char **envp)
 {
@@ -538,10 +546,10 @@ int	main(int argc, char **argv, char **envp)
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
-	g_all.path = get_path(g_all.envp);
+//	g_all.path = get_path(g_all.envp);
 	g_all.status = 0;
-	if (g_all.path == 0)
-		return (0);
+//	if (g_all.path == 0)
+//		return (0);
 	g_all.status = 0;
 	rl_event_hook = event;
 	g_all.term.c_lflag &= ~(ISIG);	
