@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/22 18:33:24 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/22 18:36:52 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -324,11 +324,7 @@ void	exit_child(void)
 		{
 			printf("minishell: permission denied: %s\n", g_all.cmd->command[0]);
 			exit(126);
-<<<<<<< HEAD
-		}
-=======
 		}	
->>>>>>> c66e5690c68260296a9cc55392529a213877d710
 	}
 	else if (g_all.cmd->command[0])
 	{

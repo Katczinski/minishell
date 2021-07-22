@@ -505,11 +505,6 @@ t_info *parser(char *line, char **envp, int status)
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
-<<<<<<< HEAD
 	//print_list(info);	
-		
-=======
-	// print_list(info);
->>>>>>> c66e5690c68260296a9cc55392529a213877d710
 	return (info);
 }
