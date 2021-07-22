@@ -424,7 +424,7 @@ int	execute(char **envp)
 
 }
 
-void	loop(char **envp)
+void	loop(void)
 {
 	char	*line;
 	
@@ -443,7 +443,7 @@ void	loop(char **envp)
 		{
 			add_history(line);
 //			printf("parsing...\n");
-			g_all.args = parser(line, envp, g_all.exit_status);
+			g_all.args = parser(line, g_all.envp, g_all.exit_status);
 //			printf("executing...\n");
 			if (g_all.args)
 			{
@@ -509,6 +509,6 @@ int	main(int argc, char **argv, char **envp)
 	g_all.term.c_lflag &= ~(ECHOCTL);
 	tcsetattr(0, TCSANOW, &g_all.term);
 	tgetent(0, term_name);
-	loop(envp);
+	loop();
 	return (g_all.exit_status);
 }
