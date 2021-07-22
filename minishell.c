@@ -279,17 +279,17 @@ void	exec_builtin(int (*fd)[2], int i, char **envp)
 	if (next_cmd(g_all.cmd))
 		dup2(fd[i][1], STDOUT_FILENO);
 	if (g_all.cmd->type == FT_ECHO)
-		ft_echo(g_all.cmd);
+		g_all.exit_status = ft_echo(g_all.cmd);
 	if (g_all.cmd->type == FT_PWD)
-		ft_pwd(g_all.args);
+		g_all.exit_status = ft_pwd(g_all.args);
 	if (g_all.cmd->type == FT_CD)
-		ft_cd(g_all.cmd, envp, g_all.args);
+		g_all.exit_status = ft_cd(g_all.cmd, envp, g_all.args);
 	if (g_all.cmd->type == FT_EXPORT)
-		g_all.envp = ft_export(g_all.cmd, g_all.envp, g_all.args);
+		g_all.exit_status = ft_export(g_all.cmd, &g_all.envp, g_all.args);
 	if (g_all.cmd->type == FT_UNSET)
-		g_all.envp = ft_unset(g_all.cmd, g_all.envp, g_all.args);
+		g_all.exit_status = ft_unset(g_all.cmd, &g_all.envp, g_all.args);
 	if (g_all.cmd->type == FT_ENV)
-		ft_env(g_all.envp);
+		g_all.exit_status = ft_env(g_all.envp);
 	if (g_all.cmd->type == FT_EXIT)
 		ft_exit(g_all.cmd, &g_all.exit_status, &g_all.status);
 }
@@ -483,8 +483,8 @@ char **save_envp(char **envp)
 	// envp++;
 	// new_envp = malloc(sizeof(char *) * (4));
 	// new_envp[3] = 0;
-	// new_envp[0] = strdup("a=1");
-	// new_envp[1] = strdup("b=2");
+	// new_envp[0] = strdup("ddd=1");
+	// new_envp[1] = strdup("ccc=2");
 	// new_envp[2] = strdup("PATH=/home");
 
 	return (new_envp);

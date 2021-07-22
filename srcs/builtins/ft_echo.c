@@ -9,7 +9,8 @@ int	ft_echo(t_command_list *list)
 	new_line = 0;
 	while (list->command[++i])
 	{
-		if ((i > 2 && !ft_strcmp(list->command[1], "-n")) || (i > 1 && ft_strcmp(list->command[1], "-n")))
+		if ((i > 2 && !ft_strcmp(list->command[1], "-n"))
+			|| (i > 1 && ft_strcmp(list->command[1], "-n")))
 			printf(" ");
 		if (i == 1 && !ft_strcmp(list->command[i], "-n"))
 			new_line++;

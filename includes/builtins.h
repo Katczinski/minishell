@@ -17,9 +17,10 @@
 int		ft_echo(t_command_list *list);
 int 	ft_pwd(t_info *info);
 int		ft_cd(t_command_list *list, char **envp, t_info *info);
-char	**ft_export(t_command_list *list, char **envp, t_info *info);
-char	**ft_unset(t_command_list *list, char **envp, t_info *info);
+int ft_export(t_command_list *list, char ***envp, t_info *info);
+int	ft_unset(t_command_list *list, char ***envp, t_info *info);
 int		find_envp(char *name, char **envp);
+void	free_arr(char **arr);
 int		ft_env(char **envp);
 void		ft_exit(t_command_list *list, int *exit_status, int *status);
 

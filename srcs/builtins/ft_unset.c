@@ -1,11 +1,11 @@
 #include "builtins.h"
 
-char **delete_envp(char *cmd, char **envp, t_info *info)
+char	**delete_envp(char *cmd, char **envp, t_info *info)
 {
-    char **new_envp;
-	int i;
-	int j;
-	int len;
+    char	**new_envp;
+	int		i;
+	int		j;
+	int		len;
 
     i = 0;
 	len = ft_strlen(cmd);
@@ -41,29 +41,21 @@ char **delete_envp(char *cmd, char **envp, t_info *info)
 		j++;
 	}
 	i = -1;
-	if (new_envp)
-	{
-		while (envp[++i])
-			free(envp[i]);
-		free(envp);
-	}
+	free_arr(envp);
     return (new_envp);
 }
 
-char **ft_unset(t_command_list *list, char **envp, t_info *info)
+int	ft_unset(t_command_list *list, char ***envp, t_info *info)
 {
 	int i;
-	// char **new_envp;
 
 	i = 0;
-    // new_envp = 0;
 	while (list->command[++i])
 	{
-		if (find_envp(list->command[i], envp))
-			envp = delete_envp(list->command[i], envp, info);
+		if (find_envp(list->command[i], *envp))
+			*envp = delete_envp(list->command[i], *envp, info);
+		else
+			return (1);
 	}
-	// if (!new_envp)
-	// 	return (envp);
-	i = -1;
-	return (envp);
+	return (0);
 }
