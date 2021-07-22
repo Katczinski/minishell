@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/22 15:59:27 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/22 18:33:24 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int	is_builtin(int type)
 {
 	if (type == FT_ECHO || type == FT_PWD || type == FT_CD
 	|| type == FT_EXPORT || type == FT_UNSET || type == FT_ENV
-	|| type == FT_EXIT || type == DRED_IN)
+	|| type == FT_EXIT)
 		return (1);
 	return (0);
 }
@@ -284,6 +284,16 @@ void	exec_builtin(int (*fd)[2], int i, char **envp)
 		dup2(fd[i - 1][0], STDIN_FILENO);
 	if (next_cmd(g_all.cmd))
 		dup2(fd[i][1], STDOUT_FILENO);
+	if (g_all.fd_in > 0)
+	{
+		dup2(g_all.fd_in, STDIN_FILENO);
+		close(g_all.fd_in);
+	}
+	if (g_all.fd_out > 0)
+	{
+		dup2(g_all.fd_out, STDOUT_FILENO);
+		close(g_all.fd_out);
+	}
 	if (g_all.cmd)
 	{
 		if (g_all.cmd->type == FT_ECHO)
@@ -312,8 +322,10 @@ void	exit_child(void)
 	if (!stat(g_all.cmd->command[0], stats))
 	{
 		if (S_ISREG(stats->st_mode))
+		{
 			printf("minishell: permission denied: %s\n", g_all.cmd->command[0]);
-			exit(126);	
+			exit(126);
+		}
 	}
 	else if (g_all.cmd->command[0])
 	{
@@ -371,18 +383,18 @@ void	exec(int (*fd)[2], int pid, int i, char **envp)
 		dup2(std_out, STDOUT_FILENO);
 		close(std_in);
 		close(std_out);
-		if (g_all.fd_in)
-			close(g_all.fd_in);
-		if (g_all.fd_out)
-			close(g_all.fd_out);
-		if (!stat(".heredoc", stats))
-			unlink(".heredoc");
-		free(stats);
+	//	if (g_all.fd_in)
+	//		close(g_all.fd_in);
+	//	if (g_all.fd_out)
+	//		close(g_all.fd_out);
 		if (g_all.binary)
 		{
 			free(g_all.binary);
 			g_all.binary = 0;
 		}
+		if (!stat(".heredoc", stats))
+			unlink(".heredoc");
+		free(stats);
 	}
 }
 
@@ -399,21 +411,12 @@ int	exec_node(t_command_list *cmd, int (*fd)[2], int pid, int i, char **envp)
 			return (-1);
 	}
 	else if (cmd->type == RED_OUT || cmd->type == DRED_OUT)
-	{
 		if (redout(cmd) == -1)
 			return (-1);
-	}
-	
 	if (cmd->type == COMMAND || is_builtin(cmd->type))
 		g_all.cmd = cmd;
 	if ((cmd->type == PIPE || cmd->next == NULL))
-	{
 		exec(fd, pid, i, envp);
-//		if (g_all.cmd && g_all.cmd->type == COMMAND)
-//			exec_bin(fd, pid, i, envp);
-//		else if (g_all.cmd && is_builtin(g_all.cmd->type))
-//			exec_builtin(fd, i, envp);
-	}
 	return (1);
 }
 
