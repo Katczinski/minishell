@@ -24,18 +24,18 @@ typedef struct	s_all
 {
 	struct termios	term;
 	struct termios	saved;
-	int		status;
-	int		exit_status;
-	char		**path;
-	char		**envp;
-	char		*binary;
-	int		fd_in;
-	int		fd_out;
-	t_info		*args;
+	int				status;
+	int				exit_status;
+	char			**path;
+	char			**envp;
+	char			*binary;
+	int				fd_in;
+	int				fd_out;
+	t_info			*args;
 	t_command_list	*cmd;
-}			t_all;
+}					t_all;
 
 
-int		ft_putchar(int c);
+int					ft_putchar(int c);
 
 #endif
