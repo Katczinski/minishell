@@ -12,13 +12,34 @@ static int	has_only_digits(char *cmd)
 	return (0);
 }
 
+static int	find_pipe(t_command_list *list)
+{
+	t_command_list *tmp;
+
+	tmp = list;
+	while (tmp)
+	{
+		if (tmp->type == PIPE)
+			return (1);
+		tmp = tmp->prev;
+	}
+	tmp = list;
+	while (tmp)
+	{
+		if (tmp->type == PIPE)
+			return (1);
+		tmp = tmp->next;
+	}
+	return (0);
+}
+
 void	ft_exit(t_command_list *list, int *exit_status, int *status)
 {
 	int value;
 
 	if (list->command[1])
 		value = ft_atoi(list->command[1]);
-	if (list->prev->type != PIPE)
+	if (!find_pipe(list))
 	{
 		printf("exit\n");
 		*status = 1;
