@@ -338,6 +338,11 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 		return (0);
 	while ((*output)[++(*i)])
 	{
+		if ((*output)[*i] == ' ' || (*output)[*i] == '\t')
+		{
+			(*i) = (*i) - 1;
+			return (0);
+		}	
 		if ((*output)[*i] == '|')
 		{
 			*output = treat_pipe(*output, i, info);
@@ -346,16 +351,13 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 		if ((*output)[*i] == '<' || (*output)[*i] == '>')
 			*output = treat_redirect(*output, i, envp, info);
 		if ((*output)[*i] == '\'')
+			// break ;
 			*output = treat_quote(*output, i);
 		if ((*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
+			// break ;
 		if ((*output)[*i] == '$')
 			*output = treat_env(*output, i, envp, info);
-		if ((*output)[*i] == ' ' || (*output)[*i] == '\t')
-		{
-			(*i) = (*i) - 1;
-			return (0);
-		}	
 	}
 	if ((*output)[0])
 	{
@@ -373,18 +375,19 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	prev_str = 0;
 	// printf("before removing space: %s\n", line);
 	if (line[(*i) - 1])
-		prev_str = malloc(sizeof(char) * (*i + 1));
-	if (!prev_str)
 	{
-		print_error(strerror(errno), info);
-		return (0);
-	}
-	if (line[(*i) - 1])
+		prev_str = malloc(sizeof(char) * (*i + 1));
+		if (!prev_str)
+		{
+			print_error(strerror(errno), info);
+			return (0);
+		}
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+	}
 	// printf("to add: %s\n", prev_str);
-	if (!info->tail && prev_str[0])
+	if (!info->tail && prev_str && prev_str[0])
 		add_element(init_element(info), info);
-	if (prev_str[0])
+	if (prev_str && prev_str[0])
 	{
 		info->tail->lines++;
 	// printf("afte init: hello\n");
@@ -399,7 +402,9 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	{
 		info->tail->command = add_line_to_cmd(output, info->tail, info);
 	}
-	*i = -1;
+	// *i = -1;
+	// ft_skip_whitespaces(i, line);
+
 	//
 	free(line);
 	if (!output)
@@ -469,6 +474,8 @@ t_info *parser(char *line, char **envp, int status)
     i = -1;
     while(line && line[++i])
     {
+		if (line[i] == ' ' || line[i] == '\t')
+			line = treat_space(line, &i, envp, info);
         if (line[i] == '\'')
             line = treat_quote(line, &i);
         if (line[i] == '\"')
@@ -477,8 +484,6 @@ t_info *parser(char *line, char **envp, int status)
         //     line = backslash(line, &i);
         if (line[i] == '$')
             line = treat_env(line, &i, envp, info);
-		if (line[i] == ' ' || line[i] == '\t')
-			line = treat_space(line, &i, envp, info);
 		if (line[i] == '|')
 			line = treat_pipe(line, &i, info);
 		if (line[i] == '<' || line[i] == '>')
@@ -498,13 +503,13 @@ t_info *parser(char *line, char **envp, int status)
  		// printf("line: %d\n", i);
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
-	else if (info->tail->prev && line[i - 1] && !info->tail->lines && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+	else if (info->tail && info->tail->prev && line[i - 1] && !info->tail->lines && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
 	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT || info->tail->prev->type == PIPE))
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
 	set_types(info);
-	//print_list(info);	
+	// print_list(info);	
 	return (info);
 }
