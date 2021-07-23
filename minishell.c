@@ -146,6 +146,7 @@ int	dredin(t_command_list *cmd)
 	g_all.fd_in = open(".heredoc", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (g_all.fd_in == -1)
 	{
+		g_all.exec = 0;
 		printf("%s: No such file or directory\n",
 			cmd->command[0]);
 		return (-1);
@@ -181,6 +182,7 @@ int	redin(t_command_list *cmd)
 	g_all.fd_in = open(cmd->command[0], O_RDONLY, 0644);
 	if (g_all.fd_in == -1)
 	{
+		g_all.exec = 0;
 		printf("%s: No such file or directory\n",
 			cmd->command[0]);
 		return (-1);
@@ -201,6 +203,7 @@ int	redout(t_command_list *cmd)
 		O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (g_all.fd_out == -1)
 	{
+		g_all.exec = 0;
 		printf("%s: No such file or directory\n",
 			cmd->command[0]);
 		return (-1);
@@ -350,12 +353,12 @@ void	exit_child(void)
 }
 
 void	exec_bin(int (*fd)[2], int i, char **envp)
-{
-	if (i != 0 && g_all.fd_in == 0)
+{	if (i != 0)
 		dup2(fd[i - 1][0], STDIN_FILENO);
 	if (next_cmd(g_all.cmd) && g_all.fd_out == 0)
 		dup2(fd[i][1], STDOUT_FILENO);
 	close_fd(fd);
+	
 	if (g_all.fd_in > 0)
 	{
 		dup2(g_all.fd_in, STDIN_FILENO);
@@ -366,7 +369,7 @@ void	exec_bin(int (*fd)[2], int i, char **envp)
 		dup2(g_all.fd_out, STDOUT_FILENO);
 		close(g_all.fd_out);
 	}
-	
+
 	if (g_all.binary && g_all.cmd)
 	{
 		if (execve(g_all.binary, g_all.cmd->command, envp) == -1)
@@ -415,22 +418,23 @@ void	exec(int (*fd)[2], int pid, int i, char **envp)
 
 int	exec_node(t_command_list *cmd, int (*fd)[2], int pid, int i, char **envp)
 {
-	if (cmd->type == RED_IN)
+	if (cmd->type == RED_IN && g_all.exec)
 	{
-		if (redin(cmd) == -1)
-			return (-1);
+		redin(cmd);
+//			return (-1);
 	}
 	else if (cmd->type == DRED_IN)
 	{
+	
 		if (dredin(cmd) == -1)
 			return (-1);
 	}
-	else if (cmd->type == RED_OUT || cmd->type == DRED_OUT)
-		if (redout(cmd) == -1)
-			return (-1);
+	else if ((cmd->type == RED_OUT || cmd->type == DRED_OUT) && g_all.exec)
+		redout(cmd);
+//			return (-1);
 	if (cmd->type == COMMAND || is_builtin(cmd->type))
 		g_all.cmd = cmd;
-	if ((cmd->type == PIPE || cmd->next == NULL))
+	if ((cmd->type == PIPE || cmd->next == NULL) && g_all.exec)
 		exec(fd, pid, i, envp);
 	return (1);
 }
@@ -460,6 +464,7 @@ void	execute(char **envp)
 			break ;
 		if (cmd->type == PIPE)
 		{
+			g_all.exec = 1;
 			i++;
 			if (g_all.fd_in > 0)
 				close(g_all.fd_in);
@@ -485,6 +490,8 @@ void	loop(void)
 	
 	while (1)
 	{
+		
+		g_all.exec = 1;
 		signal(SIGINT, sigint_handler);
 		signal(SIGQUIT, SIG_IGN);
 		line = readline("minishell> ");
