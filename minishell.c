@@ -67,6 +67,7 @@ void	sigint_handler(int signo)
 {
 	if (signo == SIGINT)
 	{
+		g_all.status = 130;
 		rl_redisplay();
 		rl_replace_line("", 0);
 		rl_done = 1;
@@ -306,6 +307,35 @@ void	handle_redir(t_command_list *cmd)
 // 	}
 
 // }
+
+void	exit_child(t_command_list *cmd)
+{
+
+	struct stat	*stats;
+
+	stats = (struct stat*)malloc(sizeof(struct stat));
+	if (!stat(cmd->command[0], stats) && g_all.path)
+	{
+		
+		if (S_ISREG(stats->st_mode))
+		{
+			printf("minishell: permission denied: %s\n", cmd->command[0]);
+			exit(126);
+		}
+		else if (S_ISDIR(stats->st_mode))
+		{
+			printf("minishell: %s: is a directory\n", cmd->command[0]);
+			exit(126);
+		}
+			exit(126); // for now
+	}
+	else if (cmd->command[0])
+	{
+			printf("%s: command not found\n", cmd->command[0]);
+			exit(127);
+	}
+}
+
 void	exec_builtin(t_command_list *cmd)
 {
 		if (cmd->type == FT_ECHO)
@@ -323,6 +353,7 @@ void	exec_builtin(t_command_list *cmd)
 		if (cmd->type == FT_EXIT)
 			ft_exit(cmd, &g_all.exit_status, &g_all.status);
 }
+
 void	exec(t_command_list *cmd)
 {
 	pid_t	pid = -1;
@@ -340,19 +371,28 @@ void	exec(t_command_list *cmd)
 			close(g_all.fd_out);
 		g_all.fd_in = 0;
 		g_all.fd_out = 0;
-		if (cmd->type == COMMAND && g_all.binary)
-			execve(g_all.binary, cmd->command, g_all.envp);
-		else
+		if (g_all.binary)
 		{
-			printf("%s: command not found\n", cmd->command[0]);
-			exit(1);
+			if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
+				exit_child(cmd);
 		}
+		else
+			exit_child(cmd);
+		// if (cmd->type == COMMAND && g_all.binary)
+		// 	execve(g_all.binary, cmd->command, g_all.envp);
+		// else
+		// {
+			
+		// 	printf("%s: command not found\n", cmd->command[0]);
+		// 	exit(1);
+		// }
 	}
 	else
 	{
 		if (is_builtin(cmd->type))
 			exec_builtin(cmd);		
-		waitpid(pid, 0, 0);
+		waitpid(pid, &g_all.exit_status, 0);
+		g_all.status = WEXITSTATUS(g_all.status);
 	}
 }
 
