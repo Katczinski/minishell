@@ -25,7 +25,8 @@ int	is_builtin(int type)
 
 int		is_redir(int type)
 {
-	if (type == RED_IN || type == DRED_IN || type == RED_OUT || type == DRED_OUT)
+	if (type == RED_IN || type == DRED_IN ||
+		type == RED_OUT || type == DRED_OUT)
 		return (1);
 	return (0);
 }
@@ -143,18 +144,18 @@ void	close_fd(int (*fd)[2])
 
 
 
-t_command_list	*find_cmd(t_command_list *cmd)
-{
-	t_command_list	*next;
+// t_command_list	*find_cmd(t_command_list *cmd)
+// {
+// 	t_command_list	*next;
 
-	next = cmd;
-	while (next && (next->type != COMMAND && !is_builtin(next->type)))
-		next = next->next;
-	if (next && (next->type == COMMAND || is_builtin(next->type)))
-		return (next);
-	else
-		return (cmd);
-}
+// 	next = cmd;
+// 	while (next && (next->type != COMMAND && !is_builtin(next->type)))
+// 		next = next->next;
+// 	if (next && (next->type == COMMAND || is_builtin(next->type)))
+// 		return (next);
+// 	else
+// 		return (cmd);
+// }
 
 t_command_list	*get_cmd(t_command_list *cmd)
 {
@@ -225,47 +226,42 @@ void	exec_dredin(t_command_list *cmd)
 
 void	handle_redir(t_command_list *cmd)
 {
-	t_command_list	*node;
 	int				fd_in = 0;
 	int				fd_out = 0;
 
-	node = cmd;
-	while (node->prev && node->prev->type != PIPE)
-		node = node->prev;
-	// if (node->type == PIPE)
-	// 	node = node->next;
-
-	while (node && node->type != PIPE)
+	while (cmd->prev && cmd->prev->type != PIPE)
+		cmd = cmd->prev;
+	while (cmd && cmd->type != PIPE)
 	{
-		if (is_redir(node->type))
+		if (is_redir(cmd->type))
 		{
 
-			if (node->type == RED_IN || node->type == DRED_IN)
+			if (cmd->type == RED_IN || cmd->type == DRED_IN)
 			{
 				if (fd_in)
 					close(fd_in);
-				if (node->type == RED_IN)
-					fd_in = open(node->command[0], O_RDONLY, 0644);
-				else if (node->type == DRED_IN)
+				if (cmd->type == RED_IN)
+					fd_in = open(cmd->command[0], O_RDONLY, 0644);
+				else if (cmd->type == DRED_IN)
 					fd_in = open(".heredoc", O_RDONLY, 0644);
 			}
 			else
 			{		
 				if (fd_out)
 					close(fd_out);
-				if (node->type == RED_OUT)
-					fd_out = open(node->command[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-				else if (node->type == DRED_OUT)
-					fd_out = open(node->command[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
+				if (cmd->type == RED_OUT)
+					fd_out = open(cmd->command[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				else if (cmd->type == DRED_OUT)
+					fd_out = open(cmd->command[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
 			}
 			if (fd_in == -1 || fd_out == -1)
 			{
-				printf("%s: No such file or directory\n", node->command[0]);
+				printf("%s: No such file or directory\n", cmd->command[0]);
 				break ;
 			}
 
 		}
-		node = node->next;
+		cmd = cmd->next;
 	}
 	g_all.fd_in = fd_in;
 	g_all.fd_out = fd_out;
@@ -312,7 +308,7 @@ void	handle_redir(t_command_list *cmd)
 // }
 void	exec_builtin(t_command_list *cmd)
 {
-			if (cmd->type == FT_ECHO)
+		if (cmd->type == FT_ECHO)
 			g_all.exit_status = ft_echo(cmd);
 		if (cmd->type == FT_PWD)
 			g_all.exit_status = ft_pwd(g_all.args);
@@ -397,10 +393,10 @@ void	ft_pipe(t_command_list *cmd, int (*fd)[2], int i)
 
 void	redir_and_exec(t_command_list *cmd)
 {
-	int				std_in;
-	int				std_out;
-	std_in = dup(STDIN_FILENO);
-	std_out = dup(STDOUT_FILENO);
+	// int				std_in;
+	// int				std_out;
+	// std_in = dup(STDIN_FILENO);
+	// std_out = dup(STDOUT_FILENO);
 	struct stat *stats;
 	stats = malloc(sizeof(struct stat));
 	int 	fd[g_all.args->elements - 1][2];
@@ -411,34 +407,34 @@ void	redir_and_exec(t_command_list *cmd)
 	else
 	{
 		handle_redir(cmd);
-		exec(get_cmd(cmd));
+		if (g_all.exec)
+			exec(get_cmd(cmd));
 	}
 	close_fd(fd);
 	if (!stat(".heredoc", stats))
 		unlink(".heredoc");
 	free(stats);
-	dup2(std_in, STDIN_FILENO);
-	dup2(std_out, STDOUT_FILENO);
-	close(std_in);
-	close(std_out);
-}
-
-void	execute(char **envp)
-{
-	// int				std_in;
-	// int				std_out;
-	t_command_list	*cmd;
-	(void)envp;
-	// std_in = dup(STDIN_FILENO);
-	// std_out = dup(STDOUT_FILENO);
-	cmd = g_all.args->head;
-//	cmd = find_cmd(g_all.args->head);
-	
-	redir_and_exec(cmd);
 	// dup2(std_in, STDIN_FILENO);
 	// dup2(std_out, STDOUT_FILENO);
 	// close(std_in);
 	// close(std_out);
+}
+
+void	execute(void)
+{
+	t_command_list	*cmd;
+	int				std_in;
+	int				std_out;
+	std_in = dup(STDIN_FILENO);
+	std_out = dup(STDOUT_FILENO);
+	cmd = g_all.args->head;
+//	cmd = find_cmd(g_all.args->head);
+	
+	redir_and_exec(cmd);
+	dup2(std_in, STDIN_FILENO);
+	dup2(std_out, STDOUT_FILENO);
+	close(std_in);
+	close(std_out);
 	
 }
 void	loop(void)
@@ -470,7 +466,7 @@ void	loop(void)
 //			printf("executing...\n");
 			if (g_all.args)
 			{
-				execute(g_all.envp);
+				execute();
 				ft_free();
 			}
 		}
@@ -491,7 +487,7 @@ char **save_envp(char **envp)
 	new_envp[i] = 0;
 	i = -1;
 	while (envp[++i])
-		new_envp[i] = strdup(envp[i]);
+		new_envp[i] = ft_strdup(envp[i]);
 	// envp++;
 	// new_envp = malloc(sizeof(char *) * (4));
 	// new_envp[3] = 0;
@@ -510,14 +506,14 @@ int	main(int argc, char **argv, char **envp)
 	tcgetattr(STDIN_FILENO, &g_all.saved);
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
+	g_all.envp = save_envp(envp);
+	g_all.status = 0;
 	// g_all.std_in = dup(STDIN_FILENO);
 	// g_all.std_out = dup(STDOUT_FILENO);
-	g_all.envp = save_envp(envp);
 //	g_all.path = get_path(g_all.envp);
-	g_all.status = 0;
 //	if (g_all.path == 0)
 //		return (0);
-	g_all.status = 0;
+//  g_all.status = 0;
 	rl_event_hook = event;
 	g_all.term.c_lflag &= ~(ISIG);	
 	g_all.term.c_lflag &= ~(ECHOCTL);
