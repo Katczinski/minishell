@@ -31,6 +31,8 @@ typedef struct	s_all
 	char			*binary;
 	int				fd_in;
 	int				fd_out;
+	int				std_in;
+	int				std_out;
 	int				exec;
 	t_info			*args;
 }					t_all;

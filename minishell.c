@@ -308,12 +308,16 @@ void	handle_redir(t_command_list *cmd)
 
 // }
 
-void	exit_child(t_command_list *cmd)
+void	exit_child(t_command_list *cmd, int (*fd)[2])
 {
 
 	struct stat	*stats;
 
 	stats = (struct stat*)malloc(sizeof(struct stat));
+	
+	dup2(g_all.std_in, STDIN_FILENO);
+	dup2(g_all.std_out, STDOUT_FILENO);
+	close_fd(fd);
 	if (!stat(cmd->command[0], stats) && g_all.path)
 	{
 		
@@ -331,8 +335,8 @@ void	exit_child(t_command_list *cmd)
 	}
 	else if (cmd->command[0])
 	{
-			printf("%s: command not found\n", cmd->command[0]);
-			exit(127);
+		printf("%s: command not found\n", cmd->command[0]);
+		exit(127);
 	}
 }
 
@@ -354,7 +358,7 @@ void	exec_builtin(t_command_list *cmd)
 			ft_exit(cmd, &g_all.exit_status, &g_all.status);
 }
 
-void	exec(t_command_list *cmd)
+void	exec(t_command_list *cmd, int (*fd)[2])
 {
 	pid_t	pid = -1;
 	if (!cmd)
@@ -365,19 +369,16 @@ void	exec(t_command_list *cmd)
 		pid = fork();
 	if (pid == 0)
 	{
-		if (g_all.fd_in > 0)
-			close(g_all.fd_in);
-		if (g_all.fd_out > 0)
-			close(g_all.fd_out);
+		close_fd(fd);
 		g_all.fd_in = 0;
 		g_all.fd_out = 0;
 		if (g_all.binary)
 		{
 			if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
-				exit_child(cmd);
+				exit_child(cmd, fd);
 		}
 		else
-			exit_child(cmd);
+			exit_child(cmd, fd);
 		// if (cmd->type == COMMAND && g_all.binary)
 		// 	execve(g_all.binary, cmd->command, g_all.envp);
 		// else
@@ -391,6 +392,7 @@ void	exec(t_command_list *cmd)
 	{
 		if (is_builtin(cmd->type))
 			exec_builtin(cmd);		
+		close_fd(fd);
 		waitpid(pid, &g_all.exit_status, 0);
 		g_all.status = WEXITSTATUS(g_all.status);
 	}
@@ -416,7 +418,7 @@ void	ft_pipe(t_command_list *cmd, int (*fd)[2], int i)
 			dup2(fd[i][1], STDOUT_FILENO);
 		close_fd(fd);
 		if (g_all.exec)
-			exec(get_cmd(cmd));	
+			exec(get_cmd(cmd), fd);	
 		exit(1);
 	}
 	else
@@ -433,10 +435,10 @@ void	ft_pipe(t_command_list *cmd, int (*fd)[2], int i)
 
 void	redir_and_exec(t_command_list *cmd)
 {
-	// int				std_in;
-	// int				std_out;
-	// std_in = dup(STDIN_FILENO);
-	// std_out = dup(STDOUT_FILENO);
+	// int				g_all.std_in;
+	// int				g_all.std_out;
+	// g_all.std_in = dup(STDIN_FILENO);
+	// g_all.std_out = dup(STDOUT_FILENO);
 	struct stat *stats;
 	stats = malloc(sizeof(struct stat));
 	int 	fd[g_all.args->elements - 1][2];
@@ -448,33 +450,33 @@ void	redir_and_exec(t_command_list *cmd)
 	{
 		handle_redir(cmd);
 		if (g_all.exec)
-			exec(get_cmd(cmd));
+			exec(get_cmd(cmd), fd);
 	}
 	close_fd(fd);
 	if (!stat(".heredoc", stats))
 		unlink(".heredoc");
 	free(stats);
-	// dup2(std_in, STDIN_FILENO);
-	// dup2(std_out, STDOUT_FILENO);
-	// close(std_in);
-	// close(std_out);
+	// dup2(g_all.std_in, STDIN_FILENO);
+	// dup2(g_all.std_out, STDOUT_FILENO);
+	// close(g_all.std_in);
+	// close(g_all.std_out);
 }
 
 void	execute(void)
 {
 	t_command_list	*cmd;
-	int				std_in;
-	int				std_out;
-	std_in = dup(STDIN_FILENO);
-	std_out = dup(STDOUT_FILENO);
+//	int				g_all.std_in;
+//	int				g_all.std_out;
+//	g_all.std_in = dup(STDIN_FILENO);
+//	g_all.std_out = dup(STDOUT_FILENO);
 	cmd = g_all.args->head;
 //	cmd = find_cmd(g_all.args->head);
 	
 	redir_and_exec(cmd);
-	dup2(std_in, STDIN_FILENO);
-	dup2(std_out, STDOUT_FILENO);
-	close(std_in);
-	close(std_out);
+	dup2(g_all.std_in, STDIN_FILENO);
+	dup2(g_all.std_out, STDOUT_FILENO);
+	close(g_all.std_in);
+	close(g_all.std_out);
 	
 }
 void	loop(void)
@@ -548,8 +550,8 @@ int	main(int argc, char **argv, char **envp)
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
 	g_all.status = 0;
-	// g_all.std_in = dup(STDIN_FILENO);
-	// g_all.std_out = dup(STDOUT_FILENO);
+	g_all.std_in = dup(STDIN_FILENO);
+	g_all.std_out = dup(STDOUT_FILENO);
 //	g_all.path = get_path(g_all.envp);
 //	if (g_all.path == 0)
 //		return (0);
