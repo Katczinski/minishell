@@ -141,7 +141,8 @@ void	close_fd(int (*fd)[2])
 		close(g_all.fd_in);
 	if (g_all.fd_out > 0)
 		close(g_all.fd_out);
-
+	g_all.fd_in = 0;
+	g_all.fd_out = 0;
 }
 
 
@@ -164,7 +165,7 @@ t_command_list	*get_cmd(t_command_list *cmd)
 	t_command_list	*next;
 
 	next = cmd;
-	while (next && (next->type != COMMAND && !is_builtin(next->type)))
+	while (next && (next->type != COMMAND && !is_builtin(next->type && next->type != PIPE)))
 		next = next->next;
 	if (next && (next->type == COMMAND || is_builtin(next->type)))
 		return (next);
@@ -177,7 +178,7 @@ t_command_list	*next_pipe(t_command_list *cmd)
 	next = cmd;
 	while (next && next->type != PIPE)	
 		next = next->next;
-	if (next)
+	if (next && next->type == PIPE)
 		return (next->next);
 	return (0);
 }
@@ -379,15 +380,7 @@ void	exec(t_command_list *cmd, int (*fd)[2])
 		}
 		else
 			exit_child(cmd, fd);
-		// if (cmd->type == COMMAND && g_all.binary)
-		// 	execve(g_all.binary, cmd->command, g_all.envp);
-		// else
-		// {
-			
-		// 	printf("%s: command not found\n", cmd->command[0]);
-		// 	exit(1);
-		// }
-	}
+		}
 	else
 	{
 		if (is_builtin(cmd->type))
@@ -396,8 +389,6 @@ void	exec(t_command_list *cmd, int (*fd)[2])
 //		dup2(g_all.std_in, STDIN_FILENO);
 //		dup2(g_all.std_out, STDOUT_FILENO);
 		close_fd(fd);
-		
-	//	close_fd(fd);
 		waitpid(pid, &g_all.exit_status, 0);
 		g_all.status = WEXITSTATUS(g_all.status);
 	}
@@ -406,7 +397,6 @@ void	exec(t_command_list *cmd, int (*fd)[2])
 void	ft_pipe(t_command_list *cmd, int (*fd)[2], int i)
 {
 	pid_t	pid;
-	
 //	char			command[256];
 	if (!cmd)
 		return ;
@@ -417,10 +407,18 @@ void	ft_pipe(t_command_list *cmd, int (*fd)[2], int i)
 //		sleep(20);
 //		printf("%s\n", cmd->command[0]);
 		handle_redir(cmd);
+		if (is_redir(cmd->type))
+			exit(1);
 		if (i != 0 && g_all.fd_in == 0)
+		{
+//			printf("pipin %s\n", cmd->command[0]);
 			dup2(fd[i - 1][0], STDIN_FILENO);
+		}
 		if (next_pipe(cmd) && g_all.fd_out == 0)
+		{
+//			printf("pipout %s\n", cmd->command[0]);
 			dup2(fd[i][1], STDOUT_FILENO);
+		}
 		close_fd(fd);
 		if (g_all.exec)
 			exec(get_cmd(cmd), fd);	
@@ -428,6 +426,8 @@ void	ft_pipe(t_command_list *cmd, int (*fd)[2], int i)
 	}
 	else
 	{
+		
+//	close_fd(fd);
 //		snprintf(command, sizeof(command), "code --open-url \"vscode://vadimcn.vscode-lldb/launch/config?{'request':'attach','pid':%d,'stopOnEntry':true}\"", pid);
 //		system(command);
 	}
