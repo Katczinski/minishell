@@ -503,7 +503,7 @@ void	loop(void)
 			add_history(line);
 //			printf("parsing...\n");
 			g_all.args = parser(line, g_all.envp, g_all.exit_status);
-//			printf("executing...\n");
+			// printf("executing...\n");
 			if (g_all.args)
 			{
 				execute();

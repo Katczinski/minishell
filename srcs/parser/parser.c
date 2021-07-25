@@ -321,7 +321,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	char	*prev_str;
 	int		type;
 
-	if (info->tail && !info->tail->type && line[*i - 1])
+	if ((info->tail && !info->tail->type && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
@@ -330,6 +330,8 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 			return (0);
 		}
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+		if (!info->tail)
+			add_element(init_element(info), info);
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
 	}
@@ -529,8 +531,9 @@ t_info *parser(char *line, char **envp, int status)
  		// printf("line: %d\n", i);
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
-	else if (info->tail && info->tail->prev && line[i - 1] && !info->tail->lines && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
-	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT || info->tail->prev->type == PIPE))
+	// else if (info->tail && info->tail->prev && line[i - 1] && !info->tail->lines && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+	// || info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT || info->tail->prev->type == PIPE))
+	else if (info->tail && !info->tail->command)
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
