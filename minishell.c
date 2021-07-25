@@ -131,7 +131,8 @@ void	close_fd(int (*fd)[2])
 		j = 0;
 		while (j < 2)
 		{
-			close(fd[i][j]);
+			if (fd[i][j] > 0)
+				close(fd[i][j]);
 			j++;
 		}
 		i++;
@@ -314,7 +315,7 @@ void	exit_child(t_command_list *cmd, int (*fd)[2])
 	struct stat	*stats;
 
 	stats = (struct stat*)malloc(sizeof(struct stat));
-	
+	(void)fd;	
 	dup2(g_all.std_in, STDIN_FILENO);
 	dup2(g_all.std_out, STDOUT_FILENO);
 	close_fd(fd);
@@ -365,13 +366,12 @@ void	exec(t_command_list *cmd, int (*fd)[2])
 		return ;
 	g_all.path = get_path(g_all.envp);
 	get_binary(cmd);
+//	printf("%d\n", g_all.fd_in);
 	if (cmd->type == COMMAND)
 		pid = fork();
 	if (pid == 0)
 	{
-		close_fd(fd);
-		g_all.fd_in = 0;
-		g_all.fd_out = 0;
+//		close_fd(fd);
 		if (g_all.binary)
 		{
 			if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
@@ -392,7 +392,12 @@ void	exec(t_command_list *cmd, int (*fd)[2])
 	{
 		if (is_builtin(cmd->type))
 			exec_builtin(cmd);		
+//		printf("here\n");
+//		dup2(g_all.std_in, STDIN_FILENO);
+//		dup2(g_all.std_out, STDOUT_FILENO);
 		close_fd(fd);
+		
+	//	close_fd(fd);
 		waitpid(pid, &g_all.exit_status, 0);
 		g_all.status = WEXITSTATUS(g_all.status);
 	}
@@ -456,10 +461,10 @@ void	redir_and_exec(t_command_list *cmd)
 	if (!stat(".heredoc", stats))
 		unlink(".heredoc");
 	free(stats);
-	// dup2(g_all.std_in, STDIN_FILENO);
-	// dup2(g_all.std_out, STDOUT_FILENO);
-	// close(g_all.std_in);
-	// close(g_all.std_out);
+	dup2(g_all.std_in, STDIN_FILENO);
+	dup2(g_all.std_out, STDOUT_FILENO);
+//	close(g_all.std_in);
+//	close(g_all.std_out);
 }
 
 void	execute(void)
@@ -467,14 +472,14 @@ void	execute(void)
 	t_command_list	*cmd;
 //	int				g_all.std_in;
 //	int				g_all.std_out;
-//	g_all.std_in = dup(STDIN_FILENO);
-//	g_all.std_out = dup(STDOUT_FILENO);
+	g_all.std_in = dup(STDIN_FILENO);
+	g_all.std_out = dup(STDOUT_FILENO);
 	cmd = g_all.args->head;
 //	cmd = find_cmd(g_all.args->head);
 	
 	redir_and_exec(cmd);
-	dup2(g_all.std_in, STDIN_FILENO);
-	dup2(g_all.std_out, STDOUT_FILENO);
+//	dup2(g_all.std_in, STDIN_FILENO);
+//	dup2(g_all.std_out, STDOUT_FILENO);
 	close(g_all.std_in);
 	close(g_all.std_out);
 	
@@ -550,8 +555,8 @@ int	main(int argc, char **argv, char **envp)
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
 	g_all.status = 0;
-	g_all.std_in = dup(STDIN_FILENO);
-	g_all.std_out = dup(STDOUT_FILENO);
+//	g_all.std_in = dup(STDIN_FILENO);
+//	g_all.std_out = dup(STDOUT_FILENO);
 //	g_all.path = get_path(g_all.envp);
 //	if (g_all.path == 0)
 //		return (0);
