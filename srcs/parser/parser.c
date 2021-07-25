@@ -80,7 +80,7 @@ static int	line_check(char *line, t_info *info)
 		if (redirects)
 			break ;
     }
-    if ((!line[i] && (quotes || dquotes)) || skip_whitespaces(i, line) || redirects)
+    if ((!line[i] && (quotes || dquotes)) || check_pipes_n_redirects(line) || redirects)
 		return (print_error("Wrong syntax", info));
 	return (0);
 }
@@ -257,7 +257,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	char	*output;
 	char	*prev_str;
 
-	if (info->tail && !info->tail->type && line[*i - 1])
+	if ((info->tail && !info->tail->type && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
@@ -266,6 +266,8 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 			return (0);
 		}
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+		if (!info->tail)
+			add_element(init_element(info), info);
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
 	}
