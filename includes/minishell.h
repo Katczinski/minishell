@@ -33,7 +33,6 @@ typedef struct	s_all
 	int				fd_out;
 	int				exec;
 	t_info			*args;
-	t_command_list	*cmd;
 }					t_all;
 
 
