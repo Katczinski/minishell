@@ -12,7 +12,7 @@ SRCS = minishell.c\
 	srcs/utils/ft_split_modified.c\
 	srcs/utils/get_next_line.c\
 	srcs/utils/print_error.c\
-	srcs/utils/skip_whitespaces.c\
+	srcs/utils/check_pipes_n_redirects.c\
 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 
