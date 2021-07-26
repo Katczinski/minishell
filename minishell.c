@@ -113,7 +113,7 @@ void	get_binary(t_command_list *cmd)
 		if (!stat(cmd->command[0], stats) && !(S_ISDIR(stats->st_mode)))
 			g_all.binary = ft_strdup(cmd->command[0]);
 	}
-	else if (!g_all.path[i] && cmd->command[0])
+	else if (g_all.path && !g_all.path[i] && cmd->command[0])
 		printf("%s: command not found\n", cmd->command[0]);
 	free(stats);
 }
@@ -165,12 +165,14 @@ t_command_list	*get_cmd(t_command_list *cmd)
 	t_command_list	*next;
 
 	next = cmd;
-	while (next && (next->type != COMMAND && !is_builtin(next->type) && next->type != PIPE))
+	while (next && (next->type != COMMAND
+		&& !is_builtin(next->type) && next->type != PIPE))
 		next = next->next;
 	if (next && (next->type == COMMAND || is_builtin(next->type)))
 		return (next);
 	return (0);
 }
+
 t_command_list	*next_pipe(t_command_list *cmd)
 {
 	t_command_list	*next = 0;
@@ -314,32 +316,27 @@ void	exit_child(t_command_list *cmd, int (*fd)[2])
 {
 
 	struct stat	*stats;
-
+	int		ret;
+	int		dir;
 	stats = (struct stat*)malloc(sizeof(struct stat));
-	(void)fd;	
 	dup2(g_all.std_in, STDIN_FILENO);
 	dup2(g_all.std_out, STDOUT_FILENO);
 	close_fd(fd);
-	if (!stat(cmd->command[0], stats) && g_all.path)
-	{
-		
-		if (S_ISREG(stats->st_mode))
-		{
-			printf("minishell: permission denied: %s\n", cmd->command[0]);
-			exit(126);
-		}
-		else if (S_ISDIR(stats->st_mode))
-		{
-			printf("minishell: %s: is a directory\n", cmd->command[0]);
-			exit(126);
-		}
-			exit(126); // for now
-	}
-	else if (cmd->command[0])
+	ret = stat(cmd->command[0], stats); 
+	dir = S_ISDIR(stats->st_mode);
+	if (ft_strchr(cmd->command[0], '/') == NULL)
 	{
 		printf("%s: command not found\n", cmd->command[0]);
 		exit(127);
 	}
+	else if (ret && !dir)
+		printf("minishell: %s: no such file or directory\n", cmd->command[0]);
+	else if (!ret && dir)
+		printf("minishell: %s: is a directory\n", cmd->command[0]);
+	else if (!ret && !dir) 
+		printf("minishell: permission denied: %s\n", cmd->command[0]);
+	exit(126);
+
 }
 
 void	exec_builtin(t_command_list *cmd)
@@ -461,6 +458,8 @@ void	redir_and_exec(t_command_list *cmd)
 	close_fd(fd);
 	if (!stat(".heredoc", stats))
 		unlink(".heredoc");
+	free(g_all.binary);
+	g_all.binary = 0;
 	free(stats);
 	dup2(g_all.std_in, STDIN_FILENO);
 	dup2(g_all.std_out, STDOUT_FILENO);
