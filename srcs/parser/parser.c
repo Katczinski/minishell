@@ -85,22 +85,22 @@ static int	line_check(char *line, t_info *info)
 	return (0);
 }
 
-char	**check_tabs(char **line)
-{
-	int i;
-	int j;
+// char	**check_tabs(char **line)
+// {
+// 	int i;
+// 	int j;
 
-	i = -1;
-	j = -1;
-	while (line[++i])
-	{
-		j = -1;
-		while (line[i][++j])
-			if (line[i][j] == '\a')
-				line[i][j] = ' ';
-	}
-	return (line);
-}
+// 	i = -1;
+// 	j = -1;
+// 	while (line[++i])
+// 	{
+// 		j = -1;
+// 		while (line[i][++j])
+// 			if (line[i][j] == '\a')
+// 				line[i][j] = ' ';
+// 	}
+// 	return (line);
+// }
 
 // char *backslash(char *line, int *i)
 // {
@@ -169,7 +169,7 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
     return (output);
 }
 
-char *treat_quote(char *line, int *i)
+char *treat_quote(char *line, int *i, t_info *info)
 {
 	int		frst_quote;
     char	*prev_str;
@@ -180,6 +180,8 @@ char *treat_quote(char *line, int *i)
 	frst_quote = *i;
     prev_str = malloc(sizeof(char) * (*i + 1));
     prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+	if (info->tail && info->tail->type == DRED_IN)
+		info->tail->quoted = 1;
     while (line[++(*i)])
     {
         if (line[*i] == '\'' )
@@ -210,9 +212,11 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
 	frst_quote = *i;
     prev_str = malloc(sizeof(char) * (*i + 1));
     prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+	if (info->tail && info->tail->type == DRED_IN)
+		info->tail->quoted = 1;
     while (line[++(*i)])
     {
-		if (line[*i] == '$')
+		if (line[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			line = treat_env(line, i, envp, info);
 		// if (line[*i] == ' ')
 		// 	line[*i] = '\a';
@@ -299,10 +303,10 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	while (line[(*i)] && line[*i] != ' ' && line[*i] != '<' && line[*i] != '>' && line[*i] != '|')
 	{
 		if (line[*i] == '\'')
-			line = treat_quote(line, i);
+			line = treat_quote(line, i, info);
 		else if (line[*i] == '\"')
 			line = treat_dquote(line, i, envp, info);
-		else if (line[*i] == '$')
+		else if (line[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			line = treat_env(line, i, envp, info);
 		(*i)++;
 	}
@@ -399,11 +403,11 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			*output = treat_redirect(*output, i, envp, info);
 		if ((*output)[*i] == '\'')
 			// break ;
-			*output = treat_quote(*output, i);
+			*output = treat_quote(*output, i, info);
 		if ((*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
-		if ((*output)[*i] == '$')
+		if ((*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			*output = treat_env(*output, i, envp, info);
 	}
 	if ((*output)[0])
@@ -472,19 +476,19 @@ void	set_types(t_info *info)
 	tmp = info->head;
 	while (tmp)
 	{
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "echo", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "echo"))
 			tmp->type = FT_ECHO;
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "cd", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "cd"))
 			tmp->type = FT_CD;
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "pwd", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "pwd"))
 			tmp->type = FT_PWD;
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "export", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "export"))
 			tmp->type = FT_EXPORT;
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "unset", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "unset"))
 			tmp->type = FT_UNSET;
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "env", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "env"))
 			tmp->type = FT_ENV;
-		if (!tmp->type && !ft_strncmp(tmp->command[0], "exit", ft_strlen(tmp->command[0])))
+		if (!tmp->type && !ft_strcmp(tmp->command[0], "exit"))
 			tmp->type = FT_EXIT;
 		if (!tmp->type)
 			tmp->type = COMMAND;
@@ -654,12 +658,12 @@ t_info *parser(char *line, char **envp, int status)
 		if (line[i] == ' ' || line[i] == '\t')
 			line = treat_space(line, &i, envp, info);
         if (line[i] == '\'')
-            line = treat_quote(line, &i);
+            line = treat_quote(line, &i, info);
         if (line[i] == '\"')
             line = treat_dquote(line, &i, envp, info);
         // if (line[i] == '\\')
         //     line = backslash(line, &i);
-        if (line[i] == '$')
+        if (line[i] == '$' && info->tail && info->tail->type != DRED_IN)
             line = treat_env(line, &i, envp, info);
 		if (line[i] == '|')
 			line = treat_pipe(line, &i, info);
@@ -689,6 +693,6 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
-	//print_list(info);	
+	print_list(info);	
 	return (info);
 }

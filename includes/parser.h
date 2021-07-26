@@ -29,8 +29,8 @@
 typedef struct s_command_list
 {
 	int					type;
+	int					quoted;
 	char    			**command;
-	// char				*file_name;
 	int					lines;
 	struct	s_command_list	*next;
 	struct	s_command_list	*prev;

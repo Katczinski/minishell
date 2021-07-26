@@ -11,6 +11,7 @@ t_command_list	*init_element(t_info *info)
 		return (0);
 	}
 	element->type = 0;
+	element->quoted = 0;
 	element->command = 0;
 	// element->file_name = 0;
 	element->lines = 0;
