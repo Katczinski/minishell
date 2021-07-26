@@ -52,7 +52,7 @@ int				print_error(char *msg, t_info *info);
 int				skip_whitespaces(int i, char *line);
 int check_pipes_n_redirects(char *line);
 char	    			**ft_split_modified(char const *s);
-
+char				*treat_env(char *line, int *i, char **envp, t_info *info);
 //Parsing
 t_info	*init_struct(int status);
 t_info 				*parser(char *line, char **envp, int status);

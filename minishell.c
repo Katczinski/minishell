@@ -67,7 +67,7 @@ void	sigint_handler(int signo)
 {
 	if (signo == SIGINT)
 	{
-		g_all.status = 130;
+		g_all.exit_status = 130;
 		rl_redisplay();
 		rl_replace_line("", 0);
 		rl_done = 1;
@@ -197,6 +197,21 @@ t_command_list	*next_pipe(t_command_list *cmd)
 // 	return (0);
 // }
 
+char	*subst_value(char *line)
+{
+	int	i = 0;
+
+	if (ft_strchr(line, '$') == NULL)
+		return (line);
+	while (line && line[i] != '\0')
+	{
+		if (line[i] == '$')
+			line = treat_env(line, &i, g_all.envp, g_all.args);
+		i++;
+	}
+	return (line);
+}
+
 void	exec_dredin(t_command_list *cmd)
 {
 	int	fd = 0;
@@ -213,6 +228,8 @@ void	exec_dredin(t_command_list *cmd)
 					break ;
 				else if (line && ft_strcmp(line, cmd->command[0]))
 				{
+					if (!cmd->quoted)
+						line = subst_value(line);
 					ft_putendl_fd(line, fd);
 					free(line);
 				}
@@ -324,6 +341,7 @@ void	exit_child(t_command_list *cmd, int (*fd)[2])
 	close_fd(fd);
 	ret = stat(cmd->command[0], stats); 
 	dir = S_ISDIR(stats->st_mode);
+	free(stats);
 	if (ft_strchr(cmd->command[0], '/') == NULL)
 	{
 		printf("%s: command not found\n", cmd->command[0]);
@@ -354,7 +372,7 @@ void	exec_builtin(t_command_list *cmd)
 		if (cmd->type == FT_ENV)
 			g_all.exit_status = ft_env(g_all.envp);
 		if (cmd->type == FT_EXIT)
-			ft_exit(cmd, &g_all.exit_status, &g_all.status);
+			ft_exit(cmd, &g_all.exit_status, &g_all.run_status);
 }
 
 void	exec(t_command_list *cmd, int (*fd)[2])
@@ -388,7 +406,7 @@ void	exec(t_command_list *cmd, int (*fd)[2])
 //		dup2(g_all.std_out, STDOUT_FILENO);
 		close_fd(fd);
 		waitpid(pid, &g_all.exit_status, 0);
-		g_all.status = WEXITSTATUS(g_all.status);
+		g_all.exit_status = WEXITSTATUS(g_all.exit_status);
 	}
 }
 
@@ -490,7 +508,7 @@ void	loop(void)
 	
 	using_history();
 	
-	while (1)
+	while (g_all.run_status)
 	{
 		
 		g_all.exec = 1;
@@ -554,7 +572,7 @@ int	main(int argc, char **argv, char **envp)
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
-	g_all.status = 0;
+	g_all.run_status = 1;
 //	g_all.std_in = dup(STDIN_FILENO);
 //	g_all.std_out = dup(STDOUT_FILENO);
 //	g_all.path = get_path(g_all.envp);

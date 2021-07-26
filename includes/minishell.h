@@ -24,7 +24,7 @@ typedef struct	s_all
 {
 	struct termios	term;
 	struct termios	saved;
-	int				status;
+	int				run_status;
 	int				exit_status;
 	char			**path;
 	char			**envp;

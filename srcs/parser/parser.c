@@ -693,6 +693,6 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
-	print_list(info);	
+//	print_list(info);	
 	return (info);
 }
