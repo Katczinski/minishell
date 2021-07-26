@@ -508,7 +508,7 @@ void	loop(void)
 	
 	using_history();
 	
-	while (g_all.run_status)
+	while (g_all.run_status == 0)
 	{
 		
 		g_all.exec = 1;
@@ -572,7 +572,7 @@ int	main(int argc, char **argv, char **envp)
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
-	g_all.run_status = 1;
+	g_all.run_status = 0;
 //	g_all.std_in = dup(STDIN_FILENO);
 //	g_all.std_out = dup(STDOUT_FILENO);
 //	g_all.path = get_path(g_all.envp);
