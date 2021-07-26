@@ -165,7 +165,7 @@ t_command_list	*get_cmd(t_command_list *cmd)
 	t_command_list	*next;
 
 	next = cmd;
-	while (next && (next->type != COMMAND && !is_builtin(next->type && next->type != PIPE)))
+	while (next && (next->type != COMMAND && !is_builtin(next->type) && next->type != PIPE))
 		next = next->next;
 	if (next && (next->type == COMMAND || is_builtin(next->type)))
 		return (next);
@@ -363,6 +363,7 @@ void	exec_builtin(t_command_list *cmd)
 void	exec(t_command_list *cmd, int (*fd)[2])
 {
 	pid_t	pid = -1;
+	
 	if (!cmd)
 		return ;
 	g_all.path = get_path(g_all.envp);
