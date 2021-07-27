@@ -337,6 +337,8 @@ void	exit_child(t_command_list *cmd, int **fd)
 	if (ft_strchr(cmd->command[0], '/') == NULL)
 	{
 		printf("%s: command not found\n", cmd->command[0]);
+		free_darr((void **)fd);
+		ft_free();
 		exit(127);
 	}
 	else if (ret && !dir)
@@ -345,6 +347,9 @@ void	exit_child(t_command_list *cmd, int **fd)
 		printf("minishell: %s: is a directory\n", cmd->command[0]);
 	else if (!ret && !dir)
 		printf("minishell: permission denied: %s\n", cmd->command[0]);
+	
+	free_darr((void **)fd);
+	ft_free();
 	exit(126);
 }
 
@@ -377,6 +382,8 @@ void	exec(t_command_list *cmd, int **fd)
 	{
 		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
 			exit_child(cmd, fd); //perror
+		free_darr((void **)fd);
+		ft_free();
 	}
 	else
 		exit_child(cmd, fd);
@@ -403,6 +410,8 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 		close_fd(fd);
 		if (g_all.exec)
 			exec(get_cmd(cmd), fd);
+		free_darr((void **)fd);
+		ft_free();
 		exit(1);
 	}
 	ft_pipe(next_pipe(cmd), fd, ++i);
@@ -465,6 +474,9 @@ void	redir_and_exec(t_command_list *cmd)
 		{
 			if (g_all.exec)
 				exec(get_cmd(cmd), fd);
+			
+			free_darr((void **)fd);
+			ft_free();
 		}
 		else
 		{	
@@ -489,6 +501,7 @@ void	redir_and_exec(t_command_list *cmd)
 void	execute(void)
 {
 	t_command_list	*cmd;
+	
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	signal(SIGQUIT, &sigquit_handler);
 	g_all.std_in = dup(STDIN_FILENO);
@@ -501,7 +514,6 @@ void	execute(void)
 	close(g_all.std_out);
 	ft_free();
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.term);
-
 }
 
 void	loop(void)
@@ -518,16 +530,13 @@ void	loop(void)
 		if (!line)
 		{
 			printf("exit\n");
-			// free_darr((void **)g_all.path);
 			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 			exit(0);
 		}
 		if (line[0] != '\0' && !is_all_whitespaces(line))
 		{
 			add_history(line);
-			// printf("parsing\n");
 			g_all.args = parser(line, g_all.envp, g_all.exit_status);
-			// printf("executing\n");
 			if (g_all.args)
 				execute();
 			else
@@ -535,8 +544,6 @@ void	loop(void)
 		}
 		else
 			free(line);
-		// free_darr((void **)g_all.path);
-		// g_all.path = 0;
 	}
 }
 
@@ -563,6 +570,7 @@ int	main(int argc, char **argv, char **envp)
 	(void)argc;
 	(void)argv;
 	tcgetattr(STDIN_FILENO, &g_all.saved);
+	tcgetattr(STDIN_FILENO, &g_all.term);
 	term_name = "xterm-256color";
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
