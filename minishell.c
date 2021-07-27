@@ -359,7 +359,7 @@ int	**create_fd(int num)
 
 	i = 0;
 	j = 0;
-	fd = malloc(sizeof(int *) * (num));
+	fd = malloc(sizeof(int *) * (num + 1));
 	if (!fd)
 		return (0);
 	while (i < num - 1)
@@ -398,11 +398,11 @@ void	redir_and_exec(t_command_list *cmd)
 		ft_pipe(cmd, fd, i);
 	else
 	{
+		handle_redir(cmd);
 		if (cmd->type == COMMAND)
 			pid = fork();
 		if (pid == 0)
 		{
-			handle_redir(cmd);
 			if (g_all.exec)
 				exec(get_cmd(cmd), fd);
 		}
@@ -441,6 +441,17 @@ void	execute(void)
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.term);
 }
 
+void	free_path(char **path)
+{
+	int	i;
+
+	i = 0;
+	while (path && path[i])
+		free(path[i++]);
+	if (path)
+		free(path);
+}
+
 void	loop(void)
 {
 	char	*line;
@@ -452,12 +463,11 @@ void	loop(void)
 		signal(SIGINT, sigint_handler);
 		signal(SIGQUIT, SIG_IGN);
 		line = readline("minishell> ");
-		if (g_all.path)
-			free(g_all.path);
 		g_all.path = get_path(g_all.envp);
 		if (!line)
 		{
 			printf("exit\n");
+			free_path(g_all.path);
 			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 			exit(0);
 		}
@@ -468,6 +478,7 @@ void	loop(void)
 			if (g_all.args)
 				execute();
 		}
+		free_path(g_all.path);
 	}
 }
 
