@@ -117,6 +117,18 @@ static int	line_check(char *line, t_info *info)
 //     return (output);
 // }
 
+void ft_free_lines(char *str1, char *str2, char *str3, char *str4)
+{
+	if (str1)
+		free(str1);
+	if (str2)
+		free(str2);
+	if (str3)
+		free(str3);
+	if (str4)
+		free(str4);
+}
+
 char *treat_env(char *line, int *i, char **envp, t_info *info)
 {
     int start;
@@ -155,17 +167,22 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
             break ;
         }
     }
-	if (key[0] == '?' && !key[1])
+	if (key[0] == '?' && !key[1] && !curr_str)
 		curr_str = ft_itoa(info->status);
 	if (!curr_str && !envp[j])
 	{
-		*i = start;
-		return (ft_strjoin(prev_str, next_str));
+		*i = start - 1;
+		output = ft_strjoin(prev_str, next_str);
+		ft_free_lines(prev_str, curr_str, next_str, key);
+		free(line);
+		return (output);
 	}
 	output = ft_strjoin(prev_str, curr_str);
 	output = ft_strjoin(output, next_str);
 	if (curr_str)
 		*i = ft_strlen(curr_str) - 1;
+	ft_free_lines(prev_str, curr_str, next_str, key);
+		free(line);
     return (output);
 }
 
@@ -197,7 +214,7 @@ char *treat_quote(char *line, int *i, t_info *info)
 	next_str = ft_strdup(line + *i + 1);
 	output = ft_strjoin(output, next_str);
 	*i = (*i) - 2;
-	free(line);
+	ft_free_lines(prev_str, curr_str, next_str, line);
     return (output);
 }
 
@@ -241,7 +258,7 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
 		print_error(strerror(errno), info);
 	// printf("char is %c\n", output[5]);
 	*i = (*i) - 2;
-	free(line);
+	ft_free_lines(prev_str, curr_str, next_str, line);
     return (output);
 }
 
@@ -285,7 +302,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	if (!find_red_in(output))
 		add_element(init_element(info), info);
 	*i = -1;
-	free(line);
+	ft_free_lines(prev_str, line, 0, 0);
 	return (output);
 }
 
@@ -318,7 +335,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	output = ft_strdup(line + *i);
 	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
 		add_element(init_element(info), info);
-	free(file_name);
+	ft_free_lines(file_name, line, 0, 0);
 	return (output);
 }
 
@@ -379,7 +396,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT) && !find_comand(info->tail))
 		output = add_red_in(output, i, envp, info);
 	*i = -1;
-	free(line);
+	// ft_free_lines(prev_str, line, 0, 0);
 	return (output);
 }
 
@@ -693,6 +710,6 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
-//	print_list(info);	
+	print_list(info);	
 	return (info);
 }
