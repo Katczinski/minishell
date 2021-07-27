@@ -328,14 +328,14 @@ void	exec(t_command_list *cmd, int **fd)
 		else
 			exit_child(cmd, fd);
 	}
-	else
-	{
-		close_fd(fd);
-		if (is_builtin(cmd->type))
-			exec_builtin(cmd);
-		// waitpid(pid, &g_all.exit_status, 0);
-		// g_all.exit_status = WEXITSTATUS(g_all.exit_status);
-	}
+	// else
+	// {
+	// 	close_fd(fd);
+	// 	if (is_builtin(cmd->type))
+	// 		exec_builtin(cmd);
+	// 	// waitpid(pid, &g_all.exit_status, 0);
+	// 	// g_all.exit_status = WEXITSTATUS(g_all.exit_status);
+	// }
 }
 
 void	ft_pipe(t_command_list *cmd, int **fd, int i)
@@ -413,6 +413,7 @@ void	redir_and_exec(t_command_list *cmd)
 		ft_pipe(cmd, fd, i);
 	else
 	{
+		if (cmd->type == COMMAND)
 		pid = fork();
 		if (pid == 0)
 		{
@@ -421,7 +422,12 @@ void	redir_and_exec(t_command_list *cmd)
 				exec(get_cmd(cmd), fd);
 		}
 		else
+		{	
+			close_fd(fd);
+			if (is_builtin(cmd->type))
+				exec_builtin(cmd);
 			waitpid(pid, 0, 0);
+		}
 	}
 	close_fd(fd);
 	if (!stat(".heredoc", stats))
