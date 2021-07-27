@@ -342,7 +342,13 @@ void	exit_child(t_command_list *cmd, int **fd)
 		exit(127);
 	}
 	else if (ret && !dir)
-		printf("minishell: %s: no such file or directory\n", cmd->command[0]);
+	{
+		printf("minishell: %s: no such file or directory\n",
+				cmd->command[0]);
+		free_darr((void **)fd);
+		ft_free();
+		exit(127);
+	}
 	else if (!ret && dir)
 		printf("minishell: %s: is a directory\n", cmd->command[0]);
 	else if (!ret && !dir)
@@ -542,7 +548,10 @@ void	loop(void)
 			if (g_all.args)
 				execute();
 			else
+			{
+				free(line);
 				g_all.exit_status = 2;
+			}
 		}
 		else
 			free(line);
