@@ -710,10 +710,6 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
-<<<<<<< HEAD
-//	print_list(info);	
-=======
 	// print_list(info);	
->>>>>>> 287d5599e322f75e2ae6a85e3abc30c8fce8cb24
 	return (info);
 }
