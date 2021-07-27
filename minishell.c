@@ -109,11 +109,10 @@ void	get_binary(t_command_list *cmd)
 	}
 	if (!g_all.binary)
 	{
-		if (!stat(cmd->command[0], stats) && !(S_ISDIR(stats->st_mode)))
+		if (!stat(cmd->command[0], stats) && !(S_ISDIR(stats->st_mode))
+			&& ft_strchr(cmd->command[0], '/'))
 			g_all.binary = ft_strdup(cmd->command[0]);
 	}
-	else if (g_all.path && !g_all.path[i] && cmd->command[0])
-		printf("%s: command not found\n", cmd->command[0]);
 	free(stats);
 }
 
@@ -369,8 +368,13 @@ void	free_darr(void **array)
 	int	i;
 
 	i = 0;
+	if (!array)
+		return ;
 	while (array && array[i])
-		free(array[i++]);
+	{
+		free(array[i]);
+		i++;
+	}
 	if (array)
 		free(array);
 }
@@ -383,10 +387,7 @@ int	**create_fd(int num)
 
 	i = 0;
 	j = 0;
-	fd = 0;
-	if (num <= 1)
-		return (0);
-	fd = malloc(sizeof(int *) * (num + 1));
+	fd = malloc(sizeof(int *) * (num));
 	if (!fd)
 		return (0);
 	while (i < num - 1)
@@ -403,7 +404,7 @@ int	**create_fd(int num)
 		fd[i][1] = -1;
 		i++;
 	}
-	fd[num] = NULL;
+	fd[num - 1] = NULL;
 	return (fd);
 }
 
@@ -491,7 +492,9 @@ void	loop(void)
 		if (line[0] != '\0')
 		{
 			add_history(line);
+			// printf("parsing\n");
 			g_all.args = parser(line, g_all.envp, g_all.exit_status);
+			// printf("executing\n");
 			if (g_all.args)
 				execute();
 		}
