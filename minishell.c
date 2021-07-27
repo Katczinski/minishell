@@ -347,7 +347,8 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 	}
 	ft_pipe(next_pipe(cmd), fd, ++i);
 	close_fd(fd);
-	waitpid(pid, 0, 0);
+	waitpid(pid, &g_all.exit_status, 0);
+	g_all.exit_status = WEXITSTATUS(g_all.exit_status);
 }
 
 int	**create_fd(int num)
