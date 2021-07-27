@@ -142,6 +142,19 @@ void	close_fd(int **fd)
 	g_all.fd_out = 0;
 }
 
+t_command_list	*find_cmd(t_command_list *cmd)
+{
+	t_command_list	*start;
+
+	start = cmd;	
+	while (cmd && (cmd->type != COMMAND
+			&& !is_builtin(cmd->type) && cmd->type != PIPE))
+		cmd = cmd->next;
+	if (cmd && (cmd->type == COMMAND || is_builtin(cmd->type)))
+		return (cmd);
+	return (start);
+}
+
 t_command_list	*get_cmd(t_command_list *cmd)
 {
 	while (cmd && (cmd->type != COMMAND
@@ -400,7 +413,7 @@ void	redir_and_exec(t_command_list *cmd)
 	int			**fd;
 	int			i;
 	pid_t		pid;
-	cmd = get_cmd(cmd);
+	cmd = find_cmd(cmd);
 	pid = -1;
 	i = 0;
 	fd = 0;
