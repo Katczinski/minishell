@@ -302,7 +302,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	if (!find_red_in(output))
 		add_element(init_element(info), info);
 	*i = -1;
-	ft_free_lines(prev_str, line, 0, 0);
+	ft_free_lines(line, 0, 0, 0);
 	return (output);
 }
 
@@ -335,7 +335,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	output = ft_strdup(line + *i);
 	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
 		add_element(init_element(info), info);
-	ft_free_lines(file_name, line, 0, 0);
+	ft_free_lines(line, 0, 0, 0);
 	return (output);
 }
 
@@ -360,7 +360,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	int		type;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && line[*i - 1]) || (!info->tail && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	// if ((info->tail && !info->tail->type && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
@@ -396,7 +396,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT) && !find_comand(info->tail))
 		output = add_red_in(output, i, envp, info);
 	*i = -1;
-	// ft_free_lines(prev_str, line, 0, 0);
+	ft_free_lines(line, 0, 0, 0);
 	return (output);
 }
 
@@ -411,20 +411,20 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			(*i) = (*i) - 1;
 			return (0);
 		}	
-		if ((*output)[*i] == '|')
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '|')
 		{
 			*output = treat_pipe(*output, i, info);
 			// break ;
 		}
-		if ((*output)[*i] == '<' || (*output)[*i] == '>')
+		if ((*output)[*i] && *i > 0 && ((*output)[*i] == '<' || (*output)[*i] == '>'))
 			*output = treat_redirect(*output, i, envp, info);
-		if ((*output)[*i] == '\'')
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '\'')
 			// break ;
 			*output = treat_quote(*output, i, info);
-		if ((*output)[*i] == '\"')
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
-		if ((*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			*output = treat_env(*output, i, envp, info);
 	}
 	if ((*output)[0])
@@ -538,37 +538,37 @@ void	print_list(t_info *info)
 	}
 }
 
-int		need_pre_treat(char *line, int i)
-{
-	// int	spaces;
-	int	args;
+// int		need_pre_treat(char *line, int i)
+// {
+// 	// int	spaces;
+// 	int	args;
 
-	// spaces = 0;
-	if (skip_whitespaces(i, line))
-		return (0);
-	args = 1;
-	while (line[i] && (line[i] == '>' || line[i] == '<'))
-		i++;
-	ft_skip_whitespaces(&i, line);
-	while (line[i] && line[i] != '|' && line[i] != '<' && line[i] != '>')
-	{
-		if ((line[i] == '\t' || line[i] == '\n' || line[i] == '\r'
-		|| line[i] == '\v' || line[i] == '\f' || line[i] == ' ') 
-		&& (line[i + 1] != '\t' && line[i + 1] != '\n' && line[i + 1] != '\r'
-		&& line[i + 1] != '\v' && line[i + 1] != '\f' && line[i + 1] != ' ')
-		&& (line[i + 1] != '|' && line[i + 1] != '<' && line[i + 1] != '>'))
-		{
-			args++;
-			ft_skip_whitespaces(&i, line);
-		}
-		if (line[i] && line[i] != '|' && line[i] != '<' && line[i] != '>')
-			i++;
-	}
-	printf("args: %d\n", args);
-	if (args > 1)
-		return (1);
-	return (0);
-}
+// 	// spaces = 0;
+// 	if (skip_whitespaces(i, line))
+// 		return (0);
+// 	args = 1;
+// 	while (line[i] && (line[i] == '>' || line[i] == '<'))
+// 		i++;
+// 	ft_skip_whitespaces(&i, line);
+// 	while (line[i] && line[i] != '|' && line[i] != '<' && line[i] != '>')
+// 	{
+// 		if ((line[i] == '\t' || line[i] == '\n' || line[i] == '\r'
+// 		|| line[i] == '\v' || line[i] == '\f' || line[i] == ' ') 
+// 		&& (line[i + 1] != '\t' && line[i + 1] != '\n' && line[i + 1] != '\r'
+// 		&& line[i + 1] != '\v' && line[i + 1] != '\f' && line[i + 1] != ' ')
+// 		&& (line[i + 1] != '|' && line[i + 1] != '<' && line[i + 1] != '>'))
+// 		{
+// 			args++;
+// 			ft_skip_whitespaces(&i, line);
+// 		}
+// 		if (line[i] && line[i] != '|' && line[i] != '<' && line[i] != '>')
+// 			i++;
+// 	}
+// 	printf("args: %d\n", args);
+// 	if (args > 1)
+// 		return (1);
+// 	return (0);
+// }
 
 // char *swap_parts(char *line, int *i)
 // {
@@ -599,24 +599,24 @@ int		need_pre_treat(char *line, int i)
 //     return (output);
 // }
 
-char	*pre_treat(char *line)
-{
-	int i;
+// char	*pre_treat(char *line)
+// {
+// 	int i;
 
-	i = 0;
-	while (line[i])
-	{
-		if ((line[i] == '>' || line[i] == '<') && need_pre_treat(line, i))
-			printf("hello\n");
-			// line = swap_parts(line, &i);
-		// else
-			i++;
-	}
+// 	i = 0;
+// 	while (line[i])
+// 	{
+// 		if ((line[i] == '>' || line[i] == '<') && need_pre_treat(line, i))
+// 			printf("hello\n");
+// 			// line = swap_parts(line, &i);
+// 		// else
+// 			i++;
+// 	}
 
 
 
-	return (line);
-}
+// 	return (line);
+// }
 
 void	throw_args_to_cmd(t_command_list *list, t_info *info)
 {
@@ -639,7 +639,7 @@ void	throw_args_to_cmd(t_command_list *list, t_info *info)
 		{
 			tmp->lines++;
 			tmp->command = add_line_to_cmd(list->command[i], tmp, info);
-			free(list->command[i]);
+			// free(list->command[i]);
 			i++;
 		}
 		list->lines = 1;
@@ -710,6 +710,10 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
+<<<<<<< HEAD
 //	print_list(info);	
+=======
+	// print_list(info);	
+>>>>>>> 287d5599e322f75e2ae6a85e3abc30c8fce8cb24
 	return (info);
 }

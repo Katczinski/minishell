@@ -60,5 +60,6 @@ char **add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
 	arr[cmd->lines - 1] = malloc(sizeof(char) * (ft_strlen(line) + 1));
 	arr[cmd->lines - 1] = ft_memcpy(arr[cmd->lines - 1], line, ft_strlen(line));
 	arr[cmd->lines] = 0;
+	free(line);
 	return (arr);
 }
