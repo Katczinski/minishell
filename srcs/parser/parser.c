@@ -138,6 +138,7 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
 	char *key;
 	char *next_str;
 	char *output;
+	char *tmp;
 
     start = *i;
     if (line[start + 1] != '_' && line[start + 1] != '?' && !ft_isalnum(line[start + 1]))
@@ -163,7 +164,7 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
         if (!ft_strncmp(key, envp[j], ft_strlen(key)) && envp[j][ft_strlen(key)] == '=')
         {
             curr_str = malloc(sizeof(char) * (ft_strlen(envp[j]) - ft_strlen(key)) + 1);
-			curr_str = ft_memcpy(curr_str, envp[j] + ft_strlen(key) + 1, ft_strlen(envp[j]) - ft_strlen(key) + 1);
+			curr_str = ft_memcpy(curr_str, envp[j] + ft_strlen(key) + 1, ft_strlen(envp[j]) - ft_strlen(key));
             break ;
         }
     }
@@ -177,8 +178,9 @@ char *treat_env(char *line, int *i, char **envp, t_info *info)
 		free(line);
 		return (output);
 	}
-	output = ft_strjoin(prev_str, curr_str);
-	output = ft_strjoin(output, next_str);
+	tmp = ft_strjoin(prev_str, curr_str);
+	output = ft_strjoin(tmp, next_str);
+	free(tmp);
 	if (curr_str)
 		*i = ft_strlen(curr_str) - 1;
 	ft_free_lines(prev_str, curr_str, next_str, key);
@@ -193,6 +195,7 @@ char *treat_quote(char *line, int *i, t_info *info)
 	char	*curr_str;
 	char	*next_str;
 	char	*output;
+	char	*tmp;
 
 	frst_quote = *i;
     prev_str = malloc(sizeof(char) * (*i + 1));
@@ -210,9 +213,10 @@ char *treat_quote(char *line, int *i, t_info *info)
         //     line = backslash(line, i);
 		}
     }
-	output = ft_strjoin(prev_str, curr_str);
+	tmp = ft_strjoin(prev_str, curr_str);
 	next_str = ft_strdup(line + *i + 1);
-	output = ft_strjoin(output, next_str);
+	output = ft_strjoin(tmp, next_str);
+	free(tmp);
 	*i = (*i) - 2;
 	ft_free_lines(prev_str, curr_str, next_str, line);
     return (output);
@@ -225,6 +229,7 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
 	char *curr_str;
 	char *next_str;
 	char *output;
+	char *tmp;
 
 	frst_quote = *i;
     prev_str = malloc(sizeof(char) * (*i + 1));
@@ -247,15 +252,16 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
         //     line = backslash(line, i);
             
     }
-	output = ft_strjoin(prev_str, curr_str);
-	if (!output)
+	tmp = ft_strjoin(prev_str, curr_str);
+	if (!tmp)
 		print_error(strerror(errno), info);
 	next_str = ft_strdup(line + *i + 1);
 	if (!next_str)
 		print_error(strerror(errno), info);
-	output = ft_strjoin(output, next_str);
+	output = ft_strjoin(tmp, next_str);
 	if (!output)
 		print_error(strerror(errno), info);
+	free(tmp);
 	// printf("char is %c\n", output[5]);
 	*i = (*i) - 2;
 	ft_free_lines(prev_str, curr_str, next_str, line);
