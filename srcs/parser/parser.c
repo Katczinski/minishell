@@ -279,7 +279,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	char	*prev_str;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && *i - 1 > 0 && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
@@ -360,7 +360,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	int		type;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && *i - 1 > 0 && line[*i - 1]))
 	// if ((info->tail && !info->tail->type && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
