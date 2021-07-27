@@ -302,7 +302,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	if (!find_red_in(output))
 		add_element(init_element(info), info);
 	*i = -1;
-	ft_free_lines(prev_str, line, 0, 0);
+	ft_free_lines(line, 0, 0, 0);
 	return (output);
 }
 
@@ -710,6 +710,6 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
-	// print_list(info);	
+	print_list(info);	
 	return (info);
 }
