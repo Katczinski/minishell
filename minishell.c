@@ -31,6 +31,14 @@ int	is_redir(int type)
 	return (0);
 }
 
+void	set_status(int status)
+{
+	if (WIFEXITED(status))
+		g_all.exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		g_all.exit_status = 128 + WTERMSIG(status);	
+}
+
 void	free_darr(void **array)
 {
 	int	i;
@@ -93,7 +101,6 @@ void	sigint_handler(int signo)
 }
 void	sigquit_handler(int signo)
 {
-	g_all.exit_status = 131;
 	printf("Quit: %d\n", signo);
 }
 
@@ -387,7 +394,7 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 	ft_pipe(next_pipe(cmd), fd, ++i);
 	close_fd(fd);
 	waitpid(pid, &g_all.exit_status, 0);
-	g_all.exit_status = WEXITSTATUS(g_all.exit_status);
+	set_status(g_all.exit_status);
 }
 
 int	**create_fd(int num)
@@ -452,7 +459,7 @@ void	redir_and_exec(t_command_list *cmd)
 				exec_builtin(cmd);
 			if (pid > 0)
 				waitpid(pid, &g_all.exit_status, 0);
-			g_all.exit_status = WEXITSTATUS(g_all.exit_status);
+			set_status(g_all.exit_status);
 		}
 	}
 	close_fd(fd);
