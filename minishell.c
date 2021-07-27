@@ -312,7 +312,7 @@ void	exec(t_command_list *cmd, int **fd)
 		return ;
 	g_all.path = get_path(g_all.envp);
 	get_binary(cmd);
-	close_fd(fd);
+//	close_fd(fd);
 	if (g_all.binary)
 	{
 		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
@@ -351,6 +351,17 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 	g_all.exit_status = WEXITSTATUS(g_all.exit_status);
 }
 
+void	free_darr(void **array)
+{
+	int	i;
+
+	i = 0;
+	while (array && array[i])
+		free(array[i++]);
+	if (array)
+		free(array);
+}
+
 int	**create_fd(int num)
 {
 	int	**fd;
@@ -359,6 +370,9 @@ int	**create_fd(int num)
 
 	i = 0;
 	j = 0;
+	fd = 0;
+	if (num <= 1)
+		return (0);
 	fd = malloc(sizeof(int *) * (num + 1));
 	if (!fd)
 		return (0);
@@ -386,7 +400,7 @@ void	redir_and_exec(t_command_list *cmd)
 	int			**fd;
 	int			i;
 	pid_t		pid;
-
+	cmd = get_cmd(cmd);
 	pid = -1;
 	i = 0;
 	fd = 0;
@@ -422,7 +436,8 @@ void	redir_and_exec(t_command_list *cmd)
 	free(stats);
 	free(g_all.binary);
 	g_all.binary = 0;
-
+	if (fd)
+		free_darr((void **)fd);
 }
 
 void	execute(void)
@@ -441,17 +456,6 @@ void	execute(void)
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.term);
 }
 
-void	free_path(char **path)
-{
-	int	i;
-
-	i = 0;
-	while (path && path[i])
-		free(path[i++]);
-	if (path)
-		free(path);
-}
-
 void	loop(void)
 {
 	char	*line;
@@ -467,7 +471,7 @@ void	loop(void)
 		if (!line)
 		{
 			printf("exit\n");
-			free_path(g_all.path);
+			free_darr((void **)g_all.path);
 			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 			exit(0);
 		}
@@ -478,7 +482,7 @@ void	loop(void)
 			if (g_all.args)
 				execute();
 		}
-		free_path(g_all.path);
+		free_darr((void **)g_all.path);
 	}
 }
 
