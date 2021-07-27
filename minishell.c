@@ -484,8 +484,10 @@ void	redir_and_exec(t_command_list *cmd)
 			if (is_builtin(cmd->type))
 				exec_builtin(cmd);
 			if (pid > 0)
+			{
 				waitpid(pid, &g_all.exit_status, 0);
-			set_status(g_all.exit_status);
+				set_status(g_all.exit_status);
+			}
 		}
 	}
 	close_fd(fd);
