@@ -308,34 +308,18 @@ void	exec_builtin(t_command_list *cmd)
 
 void	exec(t_command_list *cmd, int **fd)
 {
-	// pid_t	pid;
-
-	// pid = -1;
 	if (!cmd)
 		return ;
 	g_all.path = get_path(g_all.envp);
 	get_binary(cmd);
-	// if (cmd->type == COMMAND)
-	// 	pid = fork();
-	if (cmd->type == COMMAND)
+	close_fd(fd);
+	if (g_all.binary)
 	{
-		close_fd(fd);
-		if (g_all.binary)
-		{
-			if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
-				exit_child(cmd, fd);
-		}
-		else
-			exit_child(cmd, fd);
+		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
+			exit_child(cmd, fd); //perror
 	}
-	// else
-	// {
-	// 	close_fd(fd);
-	// 	if (is_builtin(cmd->type))
-	// 		exec_builtin(cmd);
-	// 	// waitpid(pid, &g_all.exit_status, 0);
-	// 	// g_all.exit_status = WEXITSTATUS(g_all.exit_status);
-	// }
+	else
+		exit_child(cmd, fd);
 }
 
 void	ft_pipe(t_command_list *cmd, int **fd, int i)
@@ -414,7 +398,7 @@ void	redir_and_exec(t_command_list *cmd)
 	else
 	{
 		if (cmd->type == COMMAND)
-		pid = fork();
+			pid = fork();
 		if (pid == 0)
 		{
 			handle_redir(cmd);
@@ -426,7 +410,9 @@ void	redir_and_exec(t_command_list *cmd)
 			close_fd(fd);
 			if (is_builtin(cmd->type))
 				exec_builtin(cmd);
-			waitpid(pid, 0, 0);
+			if (pid > 0)
+				waitpid(pid, &g_all.exit_status, 0);
+			g_all.exit_status = WEXITSTATUS(g_all.exit_status);
 		}
 	}
 	close_fd(fd);
@@ -441,11 +427,9 @@ void	redir_and_exec(t_command_list *cmd)
 void	execute(void)
 {
 	t_command_list	*cmd;
-
+	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	g_all.std_in = dup(STDIN_FILENO);
 	g_all.std_out = dup(STDOUT_FILENO);
-	// close(g_all.std_in);
-	// close(g_all.std_out);
 	cmd = g_all.args->head;
 	redir_and_exec(cmd);
 	dup2(g_all.std_in, STDIN_FILENO);
@@ -453,6 +437,7 @@ void	execute(void)
 	close(g_all.std_in);
 	close(g_all.std_out);
 	ft_free();
+	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.term);
 }
 
 void	loop(void)
@@ -471,8 +456,9 @@ void	loop(void)
 		g_all.path = get_path(g_all.envp);
 		if (!line)
 		{
+			printf("exit\n");
 			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
-			exit(1);
+			exit(0);
 		}
 		if (line[0] != '\0')
 		{
