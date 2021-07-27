@@ -66,6 +66,8 @@ void	ft_free(void)
 		free(temp);
 	}
 	free(g_all.args);
+	free_darr((void **)g_all.path);
+	g_all.path = 0;
 	g_all.args = 0;
 }
 
@@ -88,6 +90,11 @@ void	sigint_handler(int signo)
 		rl_replace_line("", 0);
 		rl_done = 1;
 	}
+}
+void	sigquit_handler(int signo)
+{
+	g_all.exit_status = 131;
+	printf("Quit: %d\n", signo);
 }
 
 char	**get_path(char **envp)
@@ -232,6 +239,7 @@ void	exec_dredin(t_command_list *cmd)
 				}
 				else
 				{	
+					free(line);
 					close(fd);
 					break ;
 				}
@@ -461,6 +469,7 @@ void	execute(void)
 {
 	t_command_list	*cmd;
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
+	signal(SIGQUIT, &sigquit_handler);
 	g_all.std_in = dup(STDIN_FILENO);
 	g_all.std_out = dup(STDOUT_FILENO);
 	cmd = g_all.args->head;
@@ -471,6 +480,7 @@ void	execute(void)
 	close(g_all.std_out);
 	ft_free();
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.term);
+
 }
 
 void	loop(void)
@@ -480,15 +490,14 @@ void	loop(void)
 	using_history();
 	while (g_all.run_status == 0)
 	{
-		g_all.exec = 1;
 		signal(SIGINT, sigint_handler);
 		signal(SIGQUIT, SIG_IGN);
+		g_all.exec = 1;
 		line = readline("minishell> ");
-		g_all.path = get_path(g_all.envp);
 		if (!line)
 		{
 			printf("exit\n");
-			free_darr((void **)g_all.path);
+			// free_darr((void **)g_all.path);
 			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 			exit(0);
 		}
@@ -500,9 +509,11 @@ void	loop(void)
 			// printf("executing\n");
 			if (g_all.args)
 				execute();
+			else
+				g_all.exit_status = 2;
 		}
-		free_darr((void **)g_all.path);
-		g_all.path = 0;
+		// free_darr((void **)g_all.path);
+		// g_all.path = 0;
 	}
 }
 
