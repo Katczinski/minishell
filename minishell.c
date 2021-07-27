@@ -31,6 +31,22 @@ int	is_redir(int type)
 	return (0);
 }
 
+void	free_darr(void **array)
+{
+	int	i;
+
+	i = 0;
+	if (!array)
+		return ;
+	while (array && array[i])
+	{
+		free(array[i]);
+		i++;
+	}
+	if (array)
+		free(array);
+}
+
 void	ft_free(void)
 {
 	int				i;
@@ -78,6 +94,9 @@ char	**get_path(char **envp)
 {
 	char	**path;
 
+	if (g_all.path)
+		free_darr((void **)g_all.path);
+	g_all.path = 0;
 	while (*envp != NULL && ft_strncmp(*envp, "PATH=", 5))
 		envp++;
 	if (*envp == NULL)
@@ -363,22 +382,6 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 	g_all.exit_status = WEXITSTATUS(g_all.exit_status);
 }
 
-void	free_darr(void **array)
-{
-	int	i;
-
-	i = 0;
-	if (!array)
-		return ;
-	while (array && array[i])
-	{
-		free(array[i]);
-		i++;
-	}
-	if (array)
-		free(array);
-}
-
 int	**create_fd(int num)
 {
 	int	**fd;
@@ -499,6 +502,7 @@ void	loop(void)
 				execute();
 		}
 		free_darr((void **)g_all.path);
+		g_all.path = 0;
 	}
 }
 
@@ -529,6 +533,7 @@ int	main(int argc, char **argv, char **envp)
 	tcgetattr(0, &g_all.term);
 	g_all.envp = save_envp(envp);
 	g_all.run_status = 0;
+	g_all.path = 0;
 	rl_event_hook = event;
 	g_all.term.c_lflag &= ~(ISIG);
 	g_all.term.c_lflag &= ~(ECHOCTL);
