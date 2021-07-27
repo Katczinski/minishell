@@ -279,7 +279,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	char	*prev_str;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && line[*i - 1]) || (!info->tail && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
@@ -411,20 +411,20 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			(*i) = (*i) - 1;
 			return (0);
 		}	
-		if ((*output)[*i] && *i > 0 && (*output)[*i] == '|')
+		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '|')
 		{
 			*output = treat_pipe(*output, i, info);
 			// break ;
 		}
-		if ((*output)[*i] && *i > 0 && ((*output)[*i] == '<' || (*output)[*i] == '>'))
+		if (*i >= 0 && (*output)[*i] && ((*output)[*i] == '<' || (*output)[*i] == '>'))
 			*output = treat_redirect(*output, i, envp, info);
-		if ((*output)[*i] && *i > 0 && (*output)[*i] == '\'')
+		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '\'')
 			// break ;
 			*output = treat_quote(*output, i, info);
-		if ((*output)[*i] && *i > 0 && (*output)[*i] == '\"')
+		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
-		if ((*output)[*i] && *i > 0 && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			*output = treat_env(*output, i, envp, info);
 	}
 	if ((*output)[0])
@@ -442,7 +442,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 
 	prev_str = 0;
 	// printf("before removing space: %s\n", line);
-	if (line[(*i) - 1])
+	if (*i > 0 && line[(*i) - 1])
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
@@ -476,8 +476,9 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	if (output[0] && check_last_arg(&output, envp, i, info))
 	{
 		info->tail->command = add_line_to_cmd(output, info->tail, info);
+		return (0);
 	}
-	// *i = -1;
+	
 	// ft_skip_whitespaces(i, line);
 
 	//
@@ -672,19 +673,19 @@ t_info *parser(char *line, char **envp, int status)
     i = -1;
     while(line && line[++i])
     {
-		if (line[i] == ' ' || line[i] == '\t')
+		if (line && i >= 0 && (line[i] == ' ' || line[i] == '\t'))
 			line = treat_space(line, &i, envp, info);
-        if (line[i] == '\'')
+        if (line && i >= 0 && line[i] == '\'')
             line = treat_quote(line, &i, info);
-        if (line[i] == '\"')
+        if (line && i >= 0 && line[i] == '\"')
             line = treat_dquote(line, &i, envp, info);
         // if (line[i] == '\\')
         //     line = backslash(line, &i);
-        if (line[i] == '$' && info->tail && info->tail->type != DRED_IN)
+        if (line && i >= 0 && line[i] == '$' && info->tail && info->tail->type != DRED_IN)
             line = treat_env(line, &i, envp, info);
-		if (line[i] == '|')
+		if (line && i >= 0 && line[i] == '|')
 			line = treat_pipe(line, &i, info);
-		if (line[i] == '<' || line[i] == '>')
+		if (line && i >= 0 && (line[i] == '<' || line[i] == '>'))
 			line = treat_redirect(line, &i, envp, info);
         // printf("line: %s\n", line);
     }
@@ -693,7 +694,7 @@ t_info *parser(char *line, char **envp, int status)
 	// while (line[++j])
 	// 	printf("%c\n", line[j]);
 	//
-	if (line[i - 1] && !info->head)
+	if (line && i > 0 && line[i - 1] && !info->head)
 	{
 		add_element(init_element(info), info);
 		info->tail->lines++;
@@ -703,7 +704,7 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	// else if (info->tail && info->tail->prev && line[i - 1] && !info->tail->lines && (info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
 	// || info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT || info->tail->prev->type == PIPE))
-	else if (info->tail && !info->tail->command)
+	else if (line && info->tail && !info->tail->command)
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
