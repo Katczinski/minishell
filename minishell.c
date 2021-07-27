@@ -14,6 +14,20 @@
 
 t_all	g_all;
 
+int	is_all_whitespaces(char *str)
+{
+	int	i;
+
+	i = 0;
+	while (str && str[i] != '\0')
+	{
+		if ((str[i] < 9 || str[i] > 14) && str[i] != ' ')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	is_builtin(int type)
 {
 	if (type == FT_ECHO || type == FT_PWD || type == FT_CD
@@ -508,7 +522,7 @@ void	loop(void)
 			tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 			exit(0);
 		}
-		if (line[0] != '\0')
+		if (line[0] != '\0' && !is_all_whitespaces(line))
 		{
 			add_history(line);
 			// printf("parsing\n");
@@ -519,6 +533,8 @@ void	loop(void)
 			else
 				g_all.exit_status = 2;
 		}
+		else
+			free(line);
 		// free_darr((void **)g_all.path);
 		// g_all.path = 0;
 	}
