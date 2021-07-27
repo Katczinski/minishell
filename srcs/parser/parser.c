@@ -360,7 +360,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	int		type;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && line[*i - 1]) || (!info->tail && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	// if ((info->tail && !info->tail->type && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
@@ -411,20 +411,20 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 			(*i) = (*i) - 1;
 			return (0);
 		}	
-		if ((*output)[*i] == '|')
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '|')
 		{
 			*output = treat_pipe(*output, i, info);
 			// break ;
 		}
-		if ((*output)[*i] == '<' || (*output)[*i] == '>')
+		if ((*output)[*i] && *i > 0 && ((*output)[*i] == '<' || (*output)[*i] == '>'))
 			*output = treat_redirect(*output, i, envp, info);
-		if ((*output)[*i] == '\'')
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '\'')
 			// break ;
 			*output = treat_quote(*output, i, info);
-		if ((*output)[*i] == '\"')
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
-		if ((*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		if ((*output)[*i] && *i > 0 && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			*output = treat_env(*output, i, envp, info);
 	}
 	if ((*output)[0])
