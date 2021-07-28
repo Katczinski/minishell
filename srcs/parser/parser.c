@@ -60,7 +60,7 @@ static int	line_check(char *line, t_info *info)
 
     // if (*line == '\0')
     //     return ;
-    i = -1;
+    i = 0;
     quotes = 0;
     dquotes = 0;
 	redirects = 0;
@@ -69,9 +69,9 @@ static int	line_check(char *line, t_info *info)
 		return (print_error("Wrong syntax", info));
 	info->elements++;
 	ft_skip_whitespaces(&i, line);
-	if (line[i] == '|')
+	if (i >= 0 && line[i] == '|')
 		redirects++;
-    while (line[++i] && !redirects)
+    while (line[i] && !redirects)
     {
         if (line[i] == '\'' && !quotes && !dquotes)
 			quotes = 1;
@@ -88,6 +88,7 @@ static int	line_check(char *line, t_info *info)
 		}
 		else if ((line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
 			redirects = redirects_check(line, i);
+		i++;
 		// if (redirects)
 		// 	break ;
     }
@@ -249,7 +250,7 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
 		info->tail->quoted = 1;
     while (line[++(*i)])
     {
-		if (line[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		if (line[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
 			line = treat_env(line, i, envp, info);
 		// if (line[*i] == ' ')
 		// 	line[*i] = '\a';
@@ -340,7 +341,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 			line = treat_quote(line, i, info);
 		else if (line[*i] == '\"')
 			line = treat_dquote(line, i, envp, info);
-		else if (line[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		else if (line[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
 			line = treat_env(line, i, envp, info);
 		(*i)++;
 	}
@@ -442,7 +443,7 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
-		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
 			*output = treat_env(*output, i, envp, info);
 	}
 	if (*output && (*output)[0])
@@ -700,7 +701,7 @@ t_info *parser(char *line, char **envp, int status)
             line = treat_dquote(line, &i, envp, info);
         // if (line[i] == '\\')
         //     line = backslash(line, &i);
-        if (line && i >= 0 && line[i] == '$' && info->tail && info->tail->type != DRED_IN)
+        if (line && i >= 0 && line[i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
             line = treat_env(line, &i, envp, info);
 		if (line && i >= 0 && line[i] == '|')
 			line = treat_pipe(line, &i, info);
