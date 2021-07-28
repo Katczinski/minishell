@@ -64,9 +64,9 @@ static int	line_check(char *line, t_info *info)
     quotes = 0;
     dquotes = 0;
 	redirects = 0;
-    if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
-	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/' && line[0] != '$')
-		return (print_error("Wrong syntax", info, 1));
+    // if (line[0] && !ft_isalnum(line[0]) && line[0] != '<' && line[0] != '>'
+	// && line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/' && line[0] != '$')
+	// 	return (print_error("Wrong syntax", info, 1));
 	info->elements++;
 	ft_skip_whitespaces(&i, line);
 	if (i >= 0 && line[i] == '|')
@@ -440,7 +440,7 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '\'')
 			// break ;
 			*output = treat_quote(*output, i, info);
-		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '\"')
+		else if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
 		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
@@ -697,7 +697,7 @@ t_info *parser(char *line, char **envp, int status)
 			line = treat_space(line, &i, envp, info);
         if (line && i >= 0 && line[i] == '\'')
             line = treat_quote(line, &i, info);
-        if (line && i >= 0 && line[i] == '\"')
+        else if (line && i >= 0 && line[i] == '\"')
             line = treat_dquote(line, &i, envp, info);
         // if (line[i] == '\\')
         //     line = backslash(line, &i);
