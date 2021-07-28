@@ -2,23 +2,27 @@
 
 static void	ft_free_struct(t_info *info)
 {
-	int	i;
+	int				i;
+	t_command_list	*tmp;
 
+	tmp = info->head;
 	i = -1;
-	if (info->head)
+	if (tmp)
 	{
-		while (info->head)
+		while (tmp)
 		{
-			if (info->head->command)
+			if (tmp->command)
 			{
-				while (info->head->command[++i])
-					free(info->head->command[i]);
-				free(info->head->command);
+				while (tmp->command[++i])
+					free(tmp->command[i]);
+				free(tmp->command);
 			}
-			info->head = info->head->next;
-			free(info->head->prev);
+			tmp = tmp->next;
+			if (tmp && tmp->prev)
+				free(tmp->prev);
 		}
-		free(info->head->command);
+		if (tmp && tmp->command)
+			free(tmp->command);
 	}
 	free(info);
 }
