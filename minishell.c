@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-
+t_all	g_all;
 
 int	is_all_whitespaces(char *str)
 {

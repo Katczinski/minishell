@@ -39,7 +39,6 @@ typedef struct	s_all
 	t_info			*args;
 }					t_all;
 
-t_all	g_all;
 
 int					ft_putchar(int c);
 int					is_redir(int type);

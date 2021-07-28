@@ -1,5 +1,7 @@
 #include "minishell.h"
 
+extern t_all	g_all;
+
 int	is_redir(int type)
 {
 	if (type == RED_IN || type == DRED_IN
