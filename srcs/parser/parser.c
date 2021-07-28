@@ -5,43 +5,48 @@ int	redirects_check(char *line, int i)
 	int in;
 	int out;
 
-	// if (line[i] == '>')
-	// 	out = 1;
-	// else
-	// 	in = 1;
 	out = 0;
 	in = 0;
 	while (line[i] && out < 3 && in < 3)
 	{
-		if (ft_isalnum(line[i]) && out)
+		if (line[i] && line[i] != '\t' && line[i] != '\n' && line[i] != '\r'
+			&& line[i] != '\v' && line[i] != '\f' && line[i] != ' ' && line[i] != '|' && line[i] != '<' && line[i] != '>' && out)
 			out = 0;
-		else if (ft_isalnum(line[i]) && in)
+		else if (line[i] && line[i] != '\t' && line[i] != '\n' && line[i] != '\r'
+			&& line[i] != '\v' && line[i] != '\f' && line[i] != ' ' && line[i] != '|' && line[i] != '<' && line[i] != '>' && in)
 			in = 0;
 		if (line[i] == '\'' || line[i] == '\"' || line[i] == '|')
 			break ;
-		// if ((line[i] == '>' && out == 2) || (line[i] == '<' && in == 2) || (line[i] == '>' && in) || (line[i] == '<' && out))
-		// 	return (1);
 		if (line[i] == '>')
 			out++;
 		else if (line[i] == '<')
 			in++;
-		// else if (line[i] == ' ')
-		// 	ft_skip_whitespaces(&i, line);
 		if (out && in)
 			return (1);
-		// if (line[i] == '>' && (!out || (out && line[i - 1] == '>')))
-		// 	out++;
-		// else if (line[i] == '<' && (!in || (in && line[i - 1] == '<')))
-		// 	in++;
-		
-		// if ((line[i] == '>' && out) || (line[i] == '<' && in))
-		// 	return (1);
-		// if ((line[i] == '>' && in) || (line[i] == '<' && out))
-		// 	return (1);
-		
 		i++;
 	}
-	if (out > 2 || in > 2)
+	if (out || in)
+		return (1);
+	return (0);
+}
+
+int	pipes_check(char *line, int i)
+{
+	int pipe;
+
+	pipe = 0;
+	while (line[i] && pipe < 2)
+	{
+		if (line[i] && line[i] != '\t' && line[i] != '\n' && line[i] != '\r'
+			&& line[i] != '\v' && line[i] != '\f' && line[i] != ' ' && line[i] != '|' && line[i] != '<' && line[i] != '>' && pipe)
+			pipe = 0;
+		if (line[i] == '\'' || line[i] == '\"' || line[i] == '<' || line[i] == '>')
+			break ;
+		if (line[i] == '|')
+			pipe++;
+		i++;
+	}
+	if (pipe)
 		return (1);
 	return (0);
 }
@@ -63,7 +68,10 @@ static int	line_check(char *line, t_info *info)
 	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/' && line[0] != '$')
 		return (print_error("Wrong syntax", info));
 	info->elements++;
-    while (line[++i])
+	ft_skip_whitespaces(&i, line);
+	if (line[i] == '|')
+		redirects++;
+    while (line[++i] && !redirects)
     {
         if (line[i] == '\'' && !quotes && !dquotes)
 			quotes = 1;
@@ -74,13 +82,16 @@ static int	line_check(char *line, t_info *info)
         else if (line[i] == '\"' && dquotes && !quotes)
             dquotes = 0;
         else if (line[i] == '|' && !quotes && !dquotes)
+		{
+			redirects = pipes_check(line, i);
             info->elements++;
-		if ((line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
+		}
+		else if ((line[i] == '>' || line[i] == '<') && !quotes && !dquotes)
 			redirects = redirects_check(line, i);
-		if (redirects)
-			break ;
+		// if (redirects)
+		// 	break ;
     }
-    if ((!line[i] && (quotes || dquotes)) || check_pipes_n_redirects(line) || redirects)
+    if ((!line[i] && (quotes || dquotes)) || redirects)
 		return (print_error("Wrong syntax", info));
 	return (0);
 }
@@ -285,7 +296,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	char	*prev_str;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && *i - 1 > 0 && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 >= 0 && line[*i - 1]) || (!info->tail && *i - 1 >= 0 && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
@@ -366,7 +377,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 	int		type;
 
 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 > 0 && line[*i - 1]) || (!info->tail && *i - 1 > 0 && line[*i - 1]))
+		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 >= 0 && line[*i - 1]) || (!info->tail && *i - 1 >= 0 && line[*i - 1]))
 	// if ((info->tail && !info->tail->type && line[*i - 1]) || (!info->tail && line[*i - 1]))
 	{
 		prev_str = malloc(sizeof(char) * (*i + 1));
@@ -410,30 +421,31 @@ int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 {
 	if (!(*output))
 		return (0);
-	while ((*output)[++(*i)])
+	while (*output && (*output)[++(*i)])
 	{
 		if ((*output)[*i] == ' ' || (*output)[*i] == '\t')
 		{
-			(*i) = (*i) - 1;
-			return (0);
+			// (*i) = (*i) - 1;
+			*output = treat_space(*output, i, envp, info);
+			// return (0);
 		}	
-		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '|')
+		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '|')
 		{
 			*output = treat_pipe(*output, i, info);
 			// break ;
 		}
-		if (*i >= 0 && (*output)[*i] && ((*output)[*i] == '<' || (*output)[*i] == '>'))
+		if (*i >= 0 && *output && (*output)[*i] && ((*output)[*i] == '<' || (*output)[*i] == '>'))
 			*output = treat_redirect(*output, i, envp, info);
-		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '\'')
+		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '\'')
 			// break ;
 			*output = treat_quote(*output, i, info);
-		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '\"')
+		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '\"')
 			*output = treat_dquote(*output, i, envp, info);
 			// break ;
-		if (*i >= 0 && (*output)[*i] && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
+		if (*i >= 0 && *output && (*output)[*i] && (*output)[*i] == '$' && info->tail && info->tail->type != DRED_IN)
 			*output = treat_env(*output, i, envp, info);
 	}
-	if ((*output)[0])
+	if (*output && (*output)[0])
 	{
 		info->tail->lines++;
 		return (1);
@@ -482,6 +494,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 	if (output[0] && check_last_arg(&output, envp, i, info))
 	{
 		info->tail->command = add_line_to_cmd(output, info->tail, info);
+		*i = -1;
 		return (0);
 	}
 	

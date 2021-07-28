@@ -24,7 +24,7 @@ int check_pipes_n_redirects(char *line)
 	red = 0;
 	pipe = 0;
 	cmd = 0;
-	while (line[++i])
+	while (line[++i] && line[i] != '\'' && line[i] != '\"')
 	{
 		if (line[i] && line[i] != '\t' && line[i] != '\n' && line[i] != '\r'
 			&& line[i] != '\v' && line[i] != '\f' && line[i] != ' ' && line[i] != '|' && line[i] != '<' && line[i] != '>')
