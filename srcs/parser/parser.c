@@ -682,6 +682,29 @@ void	post_treat(t_info *info)
 	}
 }
 
+// int quotes_only(char *line, t_info *info)
+// {
+// 	int i;
+// 	t_command_list *tmp;
+
+// 	i = 0;
+// 	ft_skip_whitespaces(&i, line);
+// 	if (line[i] == '\'' && line[i + 1] == '\'')
+// 	{
+// 		i++;
+// 		ft_skip_whitespaces(&i, line);
+// 	}
+// 	if (!line[i])
+// 	{
+// 		add_element(init_element(info), info);
+// 		tmp = info->head;
+// 		tmp->lines++;
+// 		tmp->command = add_line_to_cmd("\0", tmp, info);
+// 		return (1);
+// 	}
+// 	return (0);
+// }
+
 t_info *parser(char *line, char **envp, int status)
 {
 	t_info *info;
@@ -689,10 +712,13 @@ t_info *parser(char *line, char **envp, int status)
     int i;
     if (line_check(line, info))
 		return (0);
+	// if (quotes_only(line, info))
+	// 	return (info);
 	// line = pre_treat(line);
     i = -1;
-    while(line && line[++i])
+    while(line && line[0] && line[++i])
     {
+		// printf("char: %c\n", line[i]);
 		if (line && i >= 0 && (line[i] == ' ' || line[i] == '\t'))
 			line = treat_space(line, &i, envp, info);
         if (line && i >= 0 && line[i] == '\'')
@@ -729,6 +755,8 @@ t_info *parser(char *line, char **envp, int status)
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
+	// if (line && line[0])
+	// 	free(line);
 	set_types(info);
 	post_treat(info);
 	//print_list(info);	

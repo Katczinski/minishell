@@ -222,7 +222,6 @@ int	find_envp(char *name, char **envp)
 	int i;
 	int len;
 
-	
 	i = -1;
 	while (envp[++i])
 	{
