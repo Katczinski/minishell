@@ -50,11 +50,12 @@ void	ft_exit(t_command_list *list, int *exit_status, int *status)
 	{
 		printf("minishell: exit: too many arguments\n");
 		*exit_status = 1;
+		*status = 0;
 	}
 	else if (list->command[1] && !has_only_digits(list->command[1]))
 	{
 		printf("minishell: exit: numeric argument required\n");
-		*exit_status = 2;
+		*exit_status = 255;
 	}
 	else if (list->command[1] && !list->command[2] && has_only_digits(list->command[1]))
 	{
