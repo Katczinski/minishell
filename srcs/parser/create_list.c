@@ -7,7 +7,7 @@ t_command_list	*init_element(t_info *info)
 	element = malloc(sizeof(t_command_list));
 	if (!element)
 	{
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 1);
 		return (0);
 	}
 	element->type = 0;
@@ -43,7 +43,7 @@ char **add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
 	arr = malloc(sizeof(char *) * (cmd->lines + 1));
 	if (!arr)
 	{
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 1);
 		return (0);
 	}
 	j = -1;

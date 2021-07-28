@@ -9,6 +9,6 @@ int ft_pwd(t_info *info)
     if (dir_name)
         printf("%s\n", dir_name); 
     else
-        return (print_error(strerror(errno), info));
+        return (print_error(strerror(errno), info, 0));
     return (0);
 }

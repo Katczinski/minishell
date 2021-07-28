@@ -27,11 +27,11 @@ static void	ft_free_struct(t_info *info)
 	free(info);
 }
 
-int	print_error(char *msg, t_info *info)
+int	print_error(char *msg, t_info *info, int mode)
 {
 	if (msg)
 		printf("%s\n", msg);
-	if (info)
+	if (info && mode)
 		ft_free_struct(info);
 	return (1);
 }
