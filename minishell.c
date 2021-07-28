@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-t_all	g_all;
+
 
 int	is_all_whitespaces(char *str)
 {
@@ -37,16 +37,17 @@ int	is_builtin(int type)
 	return (0);
 }
 
-int	is_redir(int type)
-{
-	if (type == RED_IN || type == DRED_IN
-		|| type == RED_OUT || type == DRED_OUT)
-		return (1);
-	return (0);
-}
+// int	is_redir(int type)
+// {
+// 	if (type == RED_IN || type == DRED_IN
+// 		|| type == RED_OUT || type == DRED_OUT)
+// 		return (1);
+// 	return (0);
+// }
 
 void	set_status(int status)
 {
+	printf("here\n");
 	if (WIFEXITED(status))
 		g_all.exit_status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
@@ -107,12 +108,19 @@ void	sigint_handler(int signo)
 {
 	if (signo && signo == SIGINT)
 	{
-		g_all.exit_status = 130;
+		g_all.exit_status = 1;
 		rl_redisplay();
 		rl_replace_line("", 0);
 		rl_done = 1;
 	}
 }
+
+void	sigint_cmd(int signo)
+{
+	if (signo && signo == SIGINT)
+		g_all.exit_status = 130;
+}
+
 void	sigquit_handler(int signo)
 {
 	if (signo && signo == SIGQUIT)
@@ -221,107 +229,107 @@ t_command_list	*next_pipe(t_command_list *cmd)
 	return (0);
 }
 
-char	*subst_value(char *line)
-{
-	int	i;
+// char	*subst_value(char *line)
+// {
+// 	int	i;
 
-	i = 0;
-	if (ft_strchr(line, '$') == NULL)
-		return (line);
-	while (line && line[i] != '\0')
-	{
-		if (line[i] == '$')
-			line = treat_env(line, &i, g_all.envp, g_all.args);
-		i++;
-	}
-	return (line);
-}
+// 	i = 0;
+// 	if (ft_strchr(line, '$') == NULL)
+// 		return (line);
+// 	while (line && line[i] != '\0')
+// 	{
+// 		if (line[i] == '$')
+// 			line = treat_env(line, &i, g_all.envp, g_all.args);
+// 		i++;
+// 	}
+// 	return (line);
+// }
 
-void	exec_dredin(t_command_list *cmd)
-{
-	int		fd = 0;
-	char	*line;
+// void	exec_dredin(t_command_list *cmd)
+// {
+// 	int		fd = 0;
+// 	char	*line;
 
-	while (cmd)
-	{
-		if (cmd->type == DRED_IN)
-		{
-			fd = open(".heredoc", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-			while (1)
-			{
-				line = readline("> ");
-				if (!line)
-					break ;
-				else if (line && ft_strcmp(line, cmd->command[0]))
-				{
-					if (!cmd->quoted)
-						line = subst_value(line);
-					ft_putendl_fd(line, fd);
-					free(line);
-				}
-				else
-				{	
-					free(line);
-					close(fd);
-					break ;
-				}
-			}		
-		}
-		cmd = cmd->next;
-	}
-	if (fd)
-		close(fd);
-}
+// 	while (cmd)
+// 	{
+// 		if (cmd->type == DRED_IN)
+// 		{
+// 			fd = open(".heredoc", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+// 			while (1)
+// 			{
+// 				line = readline("> ");
+// 				if (!line)
+// 					break ;
+// 				else if (line && ft_strcmp(line, cmd->command[0]))
+// 				{
+// 					if (!cmd->quoted)
+// 						line = subst_value(line);
+// 					ft_putendl_fd(line, fd);
+// 					free(line);
+// 				}
+// 				else
+// 				{	
+// 					free(line);
+// 					close(fd);
+// 					break ;
+// 				}
+// 			}		
+// 		}
+// 		cmd = cmd->next;
+// 	}
+// 	if (fd)
+// 		close(fd);
+// }
 
-void	handle_redir(t_command_list *cmd)
-{
-	int				fd_in = 0;
-	int				fd_out = 0;
+// void	handle_redir(t_command_list *cmd)
+// {
+// 	int				fd_in = 0;
+// 	int				fd_out = 0;
 
-	while (cmd->prev && cmd->prev->type != PIPE)
-		cmd = cmd->prev;
-	while (cmd && cmd->type != PIPE)
-	{
-		if (is_redir(cmd->type))
-		{
-			if (cmd->type == RED_IN || cmd->type == DRED_IN)
-			{
-				if (fd_in)
-					close(fd_in);
-				if (cmd->type == RED_IN)
-					fd_in = open(cmd->command[0], O_RDONLY, 0644);
-				else if (cmd->type == DRED_IN)
-					fd_in = open(".heredoc", O_RDONLY, 0644);
-			}
-			else
-			{		
-				if (fd_out)
-					close(fd_out);
-				if (cmd->type == RED_OUT)
-					fd_out = open(cmd->command[0],
-							O_WRONLY | O_CREAT | O_TRUNC, 0644);
-				else if (cmd->type == DRED_OUT)
-					fd_out = open(cmd->command[0],
-							O_WRONLY | O_CREAT | O_APPEND, 0644);
-			}
-			if (fd_in == -1 || fd_out == -1)
-			{
-				printf("minishell: %s: No such file or directory\n", cmd->command[0]);
-				g_all.exit_status = 1;
-				break ;
-			}
-		}
-		cmd = cmd->next;
-	}
-	g_all.fd_in = fd_in;
-	g_all.fd_out = fd_out;
-	if (g_all.fd_in > 0)
-		dup2(g_all.fd_in, STDIN_FILENO);
-	if (g_all.fd_out > 0)
-		dup2(g_all.fd_out, STDOUT_FILENO);
-	if (g_all.fd_in == -1 || g_all.fd_out == -1)
-		g_all.exec = 0;
-}
+// 	while (cmd->prev && cmd->prev->type != PIPE)
+// 		cmd = cmd->prev;
+// 	while (cmd && cmd->type != PIPE)
+// 	{
+// 		if (is_redir(cmd->type))
+// 		{
+// 			if (cmd->type == RED_IN || cmd->type == DRED_IN)
+// 			{
+// 				if (fd_in)
+// 					close(fd_in);
+// 				if (cmd->type == RED_IN)
+// 					fd_in = open(cmd->command[0], O_RDONLY, 0644);
+// 				else if (cmd->type == DRED_IN)
+// 					fd_in = open(".heredoc", O_RDONLY, 0644);
+// 			}
+// 			else
+// 			{		
+// 				if (fd_out)
+// 					close(fd_out);
+// 				if (cmd->type == RED_OUT)
+// 					fd_out = open(cmd->command[0],
+// 							O_WRONLY | O_CREAT | O_TRUNC, 0644);
+// 				else if (cmd->type == DRED_OUT)
+// 					fd_out = open(cmd->command[0],
+// 							O_WRONLY | O_CREAT | O_APPEND, 0644);
+// 			}
+// 			if (fd_in == -1 || fd_out == -1)
+// 			{
+// 				printf("minishell: %s: No such file or directory\n", cmd->command[0]);
+// 				g_all.exit_status = 1;
+// 				break ;
+// 			}
+// 		}
+// 		cmd = cmd->next;
+// 	}
+// 	g_all.fd_in = fd_in;
+// 	g_all.fd_out = fd_out;
+// 	if (g_all.fd_in > 0)
+// 		dup2(g_all.fd_in, STDIN_FILENO);
+// 	if (g_all.fd_out > 0)
+// 		dup2(g_all.fd_out, STDOUT_FILENO);
+// 	if (g_all.fd_in == -1 || g_all.fd_out == -1)
+// 		g_all.exec = 0;
+// }
 
 void	exit_child(t_command_list *cmd, int **fd)
 {
@@ -384,12 +392,18 @@ void	exec(t_command_list *cmd, int **fd)
 		return ;
 	g_all.path = get_path(g_all.envp);
 	get_binary(cmd);
-	if (g_all.binary)
+	if (g_all.binary && cmd->type == COMMAND)
 	{
 		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
 			exit_child(cmd, fd); //perror
 		free_darr((void **)fd);
 		ft_free();
+	}
+	else if (is_builtin(cmd->type))
+	{
+		exec_builtin(cmd);
+	//	free_darr((void **)fd);
+	//	ft_free();
 	}
 	else
 		exit_child(cmd, fd);
@@ -418,7 +432,8 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 			exec(get_cmd(cmd), fd);
 		free_darr((void **)fd);
 		ft_free();
-		exit(1);
+		printf("exit_status = %d\n", g_all.exit_status);
+		exit(g_all.exit_status);
 	}
 	ft_pipe(next_pipe(cmd), fd, ++i);
 	close_fd(fd);
@@ -513,6 +528,7 @@ void	execute(void)
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	signal(SIGQUIT, &sigquit_handler);
+	signal(SIGINT, &sigint_cmd);
 	g_all.std_in = dup(STDIN_FILENO);
 	g_all.std_out = dup(STDOUT_FILENO);
 	cmd = g_all.args->head;
@@ -545,7 +561,9 @@ void	loop(void)
 		if (line[0] != '\0' && !is_all_whitespaces(line))
 		{
 			add_history(line);
+			printf("parsing\n");
 			g_all.args = parser(line, g_all.envp, g_all.exit_status);
+			printf("executing\n");
 			if (g_all.args)
 				execute();
 			else
@@ -594,5 +612,6 @@ int	main(int argc, char **argv, char **envp)
 	tcsetattr(0, TCSANOW, &g_all.term);
 	tgetent(0, term_name);
 	loop();
+	free_darr((void **)g_all.envp);
 	return (g_all.exit_status);
 }

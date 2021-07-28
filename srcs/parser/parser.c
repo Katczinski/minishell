@@ -203,7 +203,7 @@ char *treat_quote(char *line, int *i, t_info *info)
 {
 	int		frst_quote;
     char	*prev_str;
-	char	*curr_str;
+	char	*curr_str = NULL;
 	char	*next_str;
 	char	*output;
 	char	*tmp;
@@ -237,7 +237,7 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
 {
 	int frst_quote;
     char *prev_str;
-	char *curr_str;
+	char *curr_str = NULL;
 	char *next_str;
 	char *output;
 	char *tmp;

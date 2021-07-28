@@ -20,6 +20,8 @@
 # include <errno.h>
 # include <string.h>
 
+
+
 typedef struct	s_all
 {
 	struct termios	term;
@@ -37,7 +39,11 @@ typedef struct	s_all
 	t_info			*args;
 }					t_all;
 
+t_all	g_all;
 
 int					ft_putchar(int c);
+int					is_redir(int type);
+void				exec_dredin(t_command_list *cmd);
+void				handle_redir(t_command_list *cmd);
 
 #endif
