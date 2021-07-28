@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/28 15:49:27 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/28 18:52:11 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -577,19 +577,56 @@ void	loop(void)
 	}
 }
 
+char	*get_shlvl(char *envp)
+{
+	int		shlvl;
+	int		i;
+	char	*str;
+	char	*save;
+	
+	i = 0;
+	str = malloc(sizeof(char) * 7);
+	while ('0' > *envp || *envp > '9')
+	{
+		str[i] = *envp;
+		envp++;
+		i++;
+	}
+	str[i] = '\0';
+	shlvl = ft_atoi(envp) + 1;
+	save = str;
+	str = ft_strjoin(str, ft_itoa(shlvl));
+	free(save);
+	return (str);
+	
+}
+
 char	**save_envp(char **envp)
 {
 	int		i;
 	char	**new_envp;
+	int		shlvl;
 
+	shlvl = 1;
 	i = 0;
 	while (envp[i])
+	{
+		if (!ft_strncmp(envp[i], "SHLVL=", 6))
+			shlvl--;
 		i++;
-	new_envp = malloc(sizeof(char *) * (i + 1));
-	new_envp[i] = 0;
+	}
+	new_envp = malloc(sizeof(char *) * (i + shlvl + 1));
+	new_envp[i + shlvl] = 0;
 	i = -1;
 	while (envp[++i])
-		new_envp[i] = ft_strdup(envp[i]);
+	{
+		if (!ft_strncmp(envp[i], "SHLVL=", 6))
+			new_envp[i] = get_shlvl(envp[i]);
+		else
+			new_envp[i] = ft_strdup(envp[i]);
+	}
+	if (shlvl == 1)
+		new_envp[i] = get_shlvl("SHLVL=0");
 	return (new_envp);
 }
 
@@ -613,5 +650,6 @@ int	main(int argc, char **argv, char **envp)
 	tgetent(0, term_name);
 	loop();
 	free_darr((void **)g_all.envp);
+	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	return (g_all.exit_status);
 }
