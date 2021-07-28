@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/22 19:03:44 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/28 15:49:27 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ int	is_builtin(int type)
 
 void	set_status(int status)
 {
-	printf("here\n");
 	if (WIFEXITED(status))
 		g_all.exit_status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
@@ -79,7 +78,8 @@ void	ft_free(void)
 	while (g_all.args && g_all.args->head)
 	{
 		i = 0;
-		while (g_all.args->head->command
+		while (g_all.args->head
+			&& g_all.args->head->command
 			&& g_all.args->head->command[i])
 			free(g_all.args->head->command[i++]);
 		if (g_all.args->head->command)
@@ -88,7 +88,8 @@ void	ft_free(void)
 		g_all.args->head = g_all.args->head->next;
 		free(temp);
 	}
-	free(g_all.args);
+	if (g_all.args)
+		free(g_all.args);
 	free_darr((void **)g_all.path);
 	g_all.path = 0;
 	g_all.args = 0;
@@ -432,7 +433,7 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 			exec(get_cmd(cmd), fd);
 		free_darr((void **)fd);
 		ft_free();
-		printf("exit_status = %d\n", g_all.exit_status);
+		// printf("exit_status = %d\n", g_all.exit_status);
 		exit(g_all.exit_status);
 	}
 	ft_pipe(next_pipe(cmd), fd, ++i);
@@ -525,7 +526,6 @@ void	redir_and_exec(t_command_list *cmd)
 void	execute(void)
 {
 	t_command_list	*cmd;
-
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	signal(SIGQUIT, &sigquit_handler);
 	signal(SIGINT, &sigint_cmd);
@@ -561,9 +561,9 @@ void	loop(void)
 		if (line[0] != '\0' && !is_all_whitespaces(line))
 		{
 			add_history(line);
-			printf("parsing\n");
+	//		printf("parsing\n");
 			g_all.args = parser(line, g_all.envp, g_all.exit_status);
-			printf("executing\n");
+	//		printf("executing\n");
 			if (g_all.args)
 				execute();
 			else

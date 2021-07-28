@@ -13,14 +13,19 @@ SRCS = minishell.c\
 	srcs/utils/get_next_line.c\
 	srcs/utils/print_error.c\
 	srcs/utils/check_pipes_n_redirects.c\
+	srcs/redirects/redirects.c\
 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 
 NAME = minishell
 
-INC = -Iincludes -Ilibft -I /usr/local/Cellar/readline/8.1/include
+UBU = /usr/local
+MAC = /Users/abirthda/.brew
+USER = $(MAC)
 
-LIBS = -lreadline -ltermcap -Llibft -lft -L /usr/local/Cellar/readline/8.1/lib
+INC = -Iincludes -Ilibft -I $(USER)/Cellar/readline/8.1/include
+
+LIBS = -lreadline -ltermcap -Llibft -lft -L $(USER)/Cellar/readline/8.1/lib
 
 FLAGS = -Wall -Wextra -Werror
 
