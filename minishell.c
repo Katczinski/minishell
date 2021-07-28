@@ -105,7 +105,7 @@ int	ft_putchar(int c)
 
 void	sigint_handler(int signo)
 {
-	if (signo == SIGINT)
+	if (signo && signo == SIGINT)
 	{
 		g_all.exit_status = 130;
 		rl_redisplay();
@@ -115,7 +115,8 @@ void	sigint_handler(int signo)
 }
 void	sigquit_handler(int signo)
 {
-	printf("Quit: %d\n", signo);
+	if (signo && signo == SIGQUIT)
+		printf("Quit: %d\n", signo);
 }
 
 char	**get_path(char **envp)
