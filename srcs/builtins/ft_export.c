@@ -11,7 +11,7 @@ char	**copy_envp(char **envp, t_info *info)
 	arr = malloc(sizeof(char *) * (i + 1));
 	if (!arr)
 	{
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 0);
 		return (0);
 	}
 	arr[i] = 0;
@@ -21,7 +21,7 @@ char	**copy_envp(char **envp, t_info *info)
 		arr[i] = strdup(envp[i]);
 		if (!arr[i])
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 0);
 			return (0);
 		}
 	}
@@ -126,11 +126,11 @@ int	check_envp(char **cmd, t_info *info)
 	{
 		j = 0;
 		if (!ft_isalpha(cmd[i][j]) && cmd[i][j] != '_')
-			return (print_error("minishell: export: not a valid identifier", info));
+			return (print_error("minishell: export: not a valid identifier", info, 0));
 		while (cmd[i][j] && cmd[i][j] != '=' && (ft_isalnum(cmd[i][j]) || cmd[i][j] == '_'))
 			j++;
 		if (cmd[i][j] && cmd[i][j] != '=')
-			return (print_error("minishell: export: not a valid identifier", info));
+			return (print_error("minishell: export: not a valid identifier", info, 0));
 	}
 	return (0);
 }
@@ -147,7 +147,7 @@ char *save_name(char *envp_str, t_info *info)
 	name = malloc(sizeof(char) * i + 1);
 	if (!name)
 	{
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 0);
 		return (0);
 	}
 	name = ft_memcpy(name, envp_str, i);
@@ -171,7 +171,7 @@ int	change_value(char *env_name, char *cmd, char **envp, t_info *info)
 			envp[i] = ft_strdup(cmd);
 		}
 		if (!envp[i])
-			return (print_error(strerror(errno), info));
+			return (print_error(strerror(errno), info, 0));
 		// }
 	}
 	return (0);
@@ -191,7 +191,7 @@ char **create_envp(char *cmd, char **envp, t_info *info)
 		new_envp = malloc(sizeof(char *) * (i + 2));
 		if (!new_envp)
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 0);
 			return (0);
 		}
 		new_envp[i + 1] = 0;
@@ -201,14 +201,14 @@ char **create_envp(char *cmd, char **envp, t_info *info)
 			new_envp[i] = ft_strdup(envp[i]);
 			if (!new_envp[i])
 			{
-				print_error(strerror(errno), info);
+				print_error(strerror(errno), info, 0);
 				return (0);
 			}
 		}
 		new_envp[i] = ft_strdup(cmd);
 		if (!new_envp[i])
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 0);
 			return (0);
 		}
 	}
@@ -249,7 +249,7 @@ char **add_envp(char **cmd, char **envp, t_info *info)
 		env_name = save_name(cmd[i], info);
 		if (!env_name)
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 0);
 			return (0);
 		}
 		if (find_envp(env_name, envp))

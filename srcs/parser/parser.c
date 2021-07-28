@@ -66,7 +66,7 @@ static int	line_check(char *line, t_info *info)
 	redirects = 0;
     if (line[0] && !ft_isalpha(line[0]) && line[0] != '<' && line[0] != '>'
 	&& line[0] != '\"' && line[0] != '\'' && line[0] != ' '	&& line[0] != '\t' && line[0] != '.' && line[0] != '/' && line[0] != '$')
-		return (print_error("Wrong syntax", info));
+		return (print_error("Wrong syntax", info, 1));
 	info->elements++;
 	ft_skip_whitespaces(&i, line);
 	if (i >= 0 && line[i] == '|')
@@ -93,7 +93,7 @@ static int	line_check(char *line, t_info *info)
 		// 	break ;
     }
     if ((!line[i] && (quotes || dquotes)) || redirects)
-		return (print_error("Wrong syntax", info));
+		return (print_error("Wrong syntax", info, 1));
 	return (0);
 }
 
@@ -266,13 +266,13 @@ char *treat_dquote(char *line, int *i, char **envp, t_info *info)
     }
 	tmp = ft_strjoin(prev_str, curr_str);
 	if (!tmp)
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 1);
 	next_str = ft_strdup(line + *i + 1);
 	if (!next_str)
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 1);
 	output = ft_strjoin(tmp, next_str);
 	if (!output)
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 1);
 	free(tmp);
 	// printf("char is %c\n", output[5]);
 	*i = (*i) - 2;
@@ -302,7 +302,7 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 1);
 			return (0);
 		}
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
@@ -384,7 +384,7 @@ char *treat_redirect(char *line, int *i, char **envp, t_info *info)
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 1);
 			return (0);
 		}
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
@@ -466,7 +466,7 @@ char *treat_space(char *line, int *i, char **envp, t_info *info)
 		prev_str = malloc(sizeof(char) * (*i + 1));
 		if (!prev_str)
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 1);
 			return (0);
 		}
     	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));

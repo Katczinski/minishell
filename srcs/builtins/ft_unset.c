@@ -14,7 +14,7 @@ char	**delete_envp(char *cmd, char **envp, t_info *info)
 	new_envp = malloc(sizeof(char *) * i);
 	if (!new_envp)
 	{
-		print_error(strerror(errno), info);
+		print_error(strerror(errno), info, 0);
 		return (0);
 	}
 	new_envp[i - 1] = 0;
@@ -24,7 +24,7 @@ char	**delete_envp(char *cmd, char **envp, t_info *info)
 		new_envp[i] = strdup(envp[i]);
 		if (!new_envp[i])
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 0);
 			return (0);
 		}
 		i++;
@@ -35,7 +35,7 @@ char	**delete_envp(char *cmd, char **envp, t_info *info)
 		new_envp[j] = strdup(envp[i]);
 		if (!new_envp[j])
 		{
-			print_error(strerror(errno), info);
+			print_error(strerror(errno), info, 0);
 			return (0);
 		}
 		j++;

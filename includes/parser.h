@@ -48,7 +48,7 @@ typedef struct s_info
 
 //Utils
 int				get_next_line(int fd, char **line);
-int				print_error(char *msg, t_info *info);
+int				print_error(char *msg, t_info *info, int mode);
 int				skip_whitespaces(int i, char *line);
 int check_pipes_n_redirects(char *line);
 char	    			**ft_split_modified(char const *s);
