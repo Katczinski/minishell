@@ -86,7 +86,7 @@ void	open_fd_out(t_command_list *cmd)
 
 void	handle_redir(t_command_list *cmd)
 {
-	while (cmd->prev && cmd->prev->type != PIPE)
+	while (cmd && cmd->prev && cmd->prev->type != PIPE)
 		cmd = cmd->prev;
 	while (cmd && cmd->type != PIPE)
 	{

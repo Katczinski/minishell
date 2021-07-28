@@ -6,7 +6,7 @@
 /*   By: abirthda <abirthda@student.21-schoo>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/09 13:17:24 by abirthda          #+#    #+#             */
-/*   Updated: 2021/07/28 18:52:11 by abirthda         ###   ########.fr       */
+/*   Updated: 2021/07/28 19:44:47 by abirthda         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -479,6 +479,12 @@ void	redir_and_exec(t_command_list *cmd)
 	pid_t		pid;
 
 	cmd = find_cmd(cmd);
+	if (!cmd)
+	{
+		printf("minishell: : command not found\n");
+		g_all.exit_status = 127;
+		return ;
+	}
 	pid = -1;
 	i = 0;
 	fd = 0;
@@ -491,7 +497,7 @@ void	redir_and_exec(t_command_list *cmd)
 	else
 	{
 		handle_redir(cmd);
-		if (cmd->type == COMMAND && g_all.exec)
+		if (cmd && cmd->type == COMMAND && g_all.exec)
 			pid = fork();
 		if (pid == 0)
 		{
