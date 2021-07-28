@@ -306,7 +306,8 @@ void	handle_redir(t_command_list *cmd)
 			}
 			if (fd_in == -1 || fd_out == -1)
 			{
-				printf("%s: No such file or directory\n", cmd->command[0]);
+				printf("minishell: %s: No such file or directory\n", cmd->command[0]);
+				g_all.exit_status = 1;
 				break ;
 			}
 		}
@@ -345,7 +346,7 @@ void	exit_child(t_command_list *cmd, int **fd)
 	else if (ret && !dir)
 	{
 		printf("minishell: %s: no such file or directory\n",
-				cmd->command[0]);
+			cmd->command[0]);
 		free_darr((void **)fd);
 		ft_free();
 		exit(127);
@@ -354,7 +355,6 @@ void	exit_child(t_command_list *cmd, int **fd)
 		printf("minishell: %s: is a directory\n", cmd->command[0]);
 	else if (!ret && !dir)
 		printf("minishell: permission denied: %s\n", cmd->command[0]);
-	
 	free_darr((void **)fd);
 	ft_free();
 	exit(126);
@@ -384,7 +384,6 @@ void	exec(t_command_list *cmd, int **fd)
 		return ;
 	g_all.path = get_path(g_all.envp);
 	get_binary(cmd);
-//	close_fd(fd);
 	if (g_all.binary)
 	{
 		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
@@ -462,6 +461,7 @@ void	redir_and_exec(t_command_list *cmd)
 	int			**fd;
 	int			i;
 	pid_t		pid;
+
 	cmd = find_cmd(cmd);
 	pid = -1;
 	i = 0;
@@ -475,7 +475,7 @@ void	redir_and_exec(t_command_list *cmd)
 	else
 	{
 		handle_redir(cmd);
-		if (cmd->type == COMMAND)
+		if (cmd->type == COMMAND && g_all.exec)
 			pid = fork();
 		if (pid == 0)
 		{
@@ -510,7 +510,7 @@ void	redir_and_exec(t_command_list *cmd)
 void	execute(void)
 {
 	t_command_list	*cmd;
-	
+
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	signal(SIGQUIT, &sigquit_handler);
 	g_all.std_in = dup(STDIN_FILENO);
