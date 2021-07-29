@@ -16,8 +16,11 @@ SRCS = minishell.c\
 	srcs/redirects/redirects.c\
 	srcs/tools/redirect_tools.c\
 	srcs/tools/is_tools.c\
+	srcs/tools/term_tools.c\
+	srcs/tools/cmd_tools.c\
 	srcs/signals/signal_handlers.c\
 	srcs/env/env_handlers.c\
+	srcs/exec/exec.c\
 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 

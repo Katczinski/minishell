@@ -76,7 +76,8 @@ void	close_fd(int **fd)
 		j = 0;
 		while (j < 2)
 		{
-			close(fd[i][j]);
+			if (fd[i][j] > 0)
+				close(fd[i][j]);
 			j++;
 		}
 		i++;
@@ -87,38 +88,6 @@ void	close_fd(int **fd)
 		close(g_all.fd_out);
 	g_all.fd_in = 0;
 	g_all.fd_out = 0;
-}
-
-t_command_list	*find_cmd(t_command_list *cmd)
-{
-	t_command_list	*start;
-
-	start = cmd;
-	while (cmd && (cmd->type != COMMAND
-			&& !is_builtin(cmd->type) && cmd->type != PIPE))
-		cmd = cmd->next;
-	if (cmd && (cmd->type == COMMAND || is_builtin(cmd->type)))
-		return (cmd);
-	return (start);
-}
-
-t_command_list	*get_cmd(t_command_list *cmd)
-{
-	while (cmd && (cmd->type != COMMAND
-			&& !is_builtin(cmd->type) && cmd->type != PIPE))
-		cmd = cmd->next;
-	if (cmd && (cmd->type == COMMAND || is_builtin(cmd->type)))
-		return (cmd);
-	return (0);
-}
-
-t_command_list	*next_pipe(t_command_list *cmd)
-{
-	while (cmd && cmd->type != PIPE)
-		cmd = cmd->next;
-	if (cmd && cmd->type == PIPE)
-		return (cmd->next);
-	return (0);
 }
 
 void	free_and_exit(struct stat *stats, int **fd, int status)
@@ -159,80 +128,6 @@ void	exit_child(t_command_list *cmd, int **fd)
 	free_and_exit(stats, fd, 126);
 }
 
-void	exec_builtin(t_command_list *cmd)
-{
-	if (cmd->type == FT_ECHO)
-		g_all.exit_status = ft_echo(cmd);
-	if (cmd->type == FT_PWD)
-		g_all.exit_status = ft_pwd(g_all.args);
-	if (cmd->type == FT_CD)
-		g_all.exit_status = ft_cd(cmd, g_all.envp, g_all.args);
-	if (cmd->type == FT_EXPORT)
-		g_all.exit_status = ft_export(cmd, &g_all.envp, g_all.args);
-	if (cmd->type == FT_UNSET)
-		g_all.exit_status = ft_unset(cmd, &g_all.envp, g_all.args);
-	if (cmd->type == FT_ENV)
-		g_all.exit_status = ft_env(g_all.envp);
-	if (cmd->type == FT_EXIT)
-		ft_exit(cmd, &g_all.exit_status, &g_all.run_status);
-}
-
-void	exec(t_command_list *cmd, int **fd)
-{
-	if (!cmd)
-		return ;
-	g_all.path = get_path(g_all.envp);
-	get_binary(cmd);
-	if (g_all.binary && cmd->type == COMMAND)
-	{
-		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
-			exit_child(cmd, fd); //perror
-		free_darr((void **)fd);
-		ft_free();
-	}
-	else if (is_builtin(cmd->type))
-		exec_builtin(cmd);
-	else
-		exit_child(cmd, fd);
-}
-
-void	child(t_command_list *cmd, int **fd, int i)
-{
-	handle_redir(cmd);
-	if (is_redir(cmd->type))
-		exit(1);
-	if (i != 0 && g_all.fd_in == 0)
-		dup2(fd[i - 1][0], STDIN_FILENO);
-	if (next_pipe(cmd) && g_all.fd_out == 0)
-		dup2(fd[i][1], STDOUT_FILENO);
-	close_fd(fd);
-	if (g_all.exec)
-		exec(get_cmd(cmd), fd);
-	free_darr((void **)fd);
-	ft_free();
-	exit(g_all.exit_status);
-}
-
-void	ft_pipe(t_command_list *cmd, int **fd, int i)
-{
-	pid_t	pid;
-
-	if (!cmd)
-		return ;
-	if (i < g_all.args->elements - 1)
-		pipe(fd[i]);
-	pid = fork();
-	if (pid == 0)
-		child(cmd, fd, i);
-	ft_pipe(next_pipe(cmd), fd, ++i);
-	close_fd(fd);
-	waitpid(pid, &g_all.exit_status, 0);
-	set_status(g_all.exit_status);
-	if (i == g_all.args->elements)
-		g_all.last_exit = g_all.exit_status;
-
-}
-
 int	**create_fd(int num)
 {
 	int	**fd;
@@ -264,7 +159,6 @@ int	**create_fd(int num)
 
 void	redir_and_exec(t_command_list *cmd)
 {
-	struct stat	*stats;
 	int			**fd;
 	int			i;
 	pid_t		pid;
@@ -274,41 +168,17 @@ void	redir_and_exec(t_command_list *cmd)
 	fd = 0;
 	if (g_all.args->elements > 1)
 		fd = create_fd(g_all.args->elements);
-	stats = malloc(sizeof(struct stat));
 	exec_dredin(cmd);
 	if (next_pipe(cmd))
-	{
-		ft_pipe(cmd, fd, i);
-		g_all.exit_status = g_all.last_exit;
-	}
+		g_all.exit_status = ft_pipe(cmd, fd, i);
 	else
 	{
 		handle_redir(cmd);
 		if (cmd && cmd->type == COMMAND && g_all.exec)
 			pid = fork();
-		if (pid == 0)
-		{
-			if (g_all.exec)
-				exec(get_cmd(cmd), fd);
-			free_darr((void **)fd);
-			ft_free();
-		}
-		else
-		{	
-			close_fd(fd);
-			if (is_builtin(cmd->type))
-				exec_builtin(cmd);
-			if (pid > 0)
-			{
-				waitpid(pid, &g_all.exit_status, 0);
-				set_status(g_all.exit_status);
-			}
-		}
+		exec_single_cmd(cmd, pid, fd);
 	}
 	close_fd(fd);
-	if (!stat(".heredoc", stats))
-		unlink(".heredoc");
-	free(stats);
 	free(g_all.binary);
 	g_all.binary = 0;
 	if (fd)
@@ -318,12 +188,10 @@ void	redir_and_exec(t_command_list *cmd)
 void	execute(void)
 {
 	t_command_list	*cmd;
+	struct stat		*stats;
 
-	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
-	signal(SIGQUIT, &sigquit_handler);
-	signal(SIGINT, &sigint_cmd);
-	g_all.std_in = dup(STDIN_FILENO);
-	g_all.std_out = dup(STDOUT_FILENO);
+	stats = malloc(sizeof(struct stat));
+	set_term();
 	cmd = find_cmd(g_all.args->head);
 	if (!cmd)
 	{
@@ -332,12 +200,28 @@ void	execute(void)
 	}
 	else
 		redir_and_exec(cmd);
+	if (!stat(".heredoc", stats))
+		unlink(".heredoc");
+	free(stats);
 	dup2(g_all.std_in, STDIN_FILENO);
 	dup2(g_all.std_out, STDOUT_FILENO);
 	close(g_all.std_in);
 	close(g_all.std_out);
 	ft_free();
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.term);
+}
+
+void	parse_and_execute(char **line)
+{
+	add_history(*line);
+	g_all.args = parser(*line, g_all.envp, g_all.exit_status);
+	if (g_all.args)
+		execute();
+	else
+	{
+		free(*line);
+		g_all.exit_status = 2;
+	}
 }
 
 void	loop(void)
@@ -358,17 +242,7 @@ void	loop(void)
 			exit(0);
 		}
 		if (line[0] != '\0' && !is_all_whitespaces(line))
-		{
-			add_history(line);
-			g_all.args = parser(line, g_all.envp, g_all.exit_status);
-			if (g_all.args)
-				execute();
-			else
-			{
-				free(line);
-				g_all.exit_status = 2;
-			}
-		}
+			parse_and_execute(&line);
 		else
 			free(line);
 	}
