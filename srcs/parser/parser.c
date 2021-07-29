@@ -38,7 +38,7 @@ int	pipes_check(char *line, int i)
 	while (line[i] && pipe < 2)
 	{
 		if (line[i] && line[i] != '\t' && line[i] != '\n' && line[i] != '\r'
-			&& line[i] != '\v' && line[i] != '\f' && line[i] != ' ' && line[i] != '|' && line[i] != '<' && line[i] != '>' && pipe)
+			&& line[i] != '\v' && line[i] != '\f' && line[i] != ' ' && line[i] != '|' && pipe)
 			pipe = 0;
 		if (line[i] == '\'' || line[i] == '\"' || line[i] == '<' || line[i] == '>')
 			break ;
@@ -286,7 +286,7 @@ int find_red_in(char *line)
 
 	i = 0;
 	ft_skip_whitespaces(&i, line);
-	if (line[i] == '<')
+	if (line[i] == '<' || line[i] == '>')
 		return (1);
 	return (0);
 }
@@ -759,6 +759,6 @@ t_info *parser(char *line, char **envp, int status)
 	// 	free(line);
 	set_types(info);
 	post_treat(info);
-	//print_list(info);	
+	// print_list(info);	
 	return (info);
 }
