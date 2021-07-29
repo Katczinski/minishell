@@ -2,61 +2,25 @@
 
 extern t_all	g_all;
 
-int	is_redir(int type)
-{
-	if (type == RED_IN || type == DRED_IN
-		|| type == RED_OUT || type == DRED_OUT)
-		return (1);
-	return (0);
-}
-
-char	*subst_value(char *line)
-{
-	int	i;
-
-	i = 0;
-	if (ft_strchr(line, '$') == NULL)
-		return (line);
-	while (line && line[i] != '\0')
-	{
-		if (line[i] == '$')
-			line = treat_env(line, &i, g_all.envp, g_all.args);
-		i++;
-	}
-	return (line);
-}
-
 void	exec_dredin(t_command_list *cmd)
 {
-	int		fd = 0;
-	char	*line;
+	int		fd;
+	int		read;
 
+	fd = 0;
+	read = 1;
 	while (cmd)
 	{
+		if (fd)
+			close(fd);
 		if (cmd->type == DRED_IN)
 		{
 			fd = open(".heredoc", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-			while (1)
-			{
-				line = readline("> ");
-				if (!line)
-					break ;
-				else if (line && ft_strcmp(line, cmd->command[0]))
-				{
-					if (!cmd->quoted)
-						line = subst_value(line);
-					ft_putendl_fd(line, fd);
-					free(line);
-				}
-				else
-				{	
-					free(line);
-					close(fd);
-					break ;
-				}
-			}		
-		}
+			while (read)
+				read = heredoc_reader(fd, cmd);
+		}		
 		cmd = cmd->next;
+		read = 1;
 	}
 	if (fd)
 		close(fd);
@@ -107,8 +71,5 @@ void	handle_redir(t_command_list *cmd)
 		}
 		cmd = cmd->next;
 	}
-	if (g_all.fd_in > 0)
-		dup2(g_all.fd_in, STDIN_FILENO);
-	if (g_all.fd_out > 0)
-		dup2(g_all.fd_out, STDOUT_FILENO);
+	ft_dup2();
 }

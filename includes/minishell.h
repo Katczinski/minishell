@@ -42,7 +42,9 @@ typedef struct	s_all
 
 int					ft_putchar(int c);
 int					is_redir(int type);
+int					heredoc_reader(int fd, t_command_list *cmd);
+void				ft_dup2(void);
 void				exec_dredin(t_command_list *cmd);
 void				handle_redir(t_command_list *cmd);
-
+char				*subst_value(char *line);
 #endif

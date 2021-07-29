@@ -14,6 +14,7 @@ SRCS = minishell.c\
 	srcs/utils/print_error.c\
 	srcs/utils/check_pipes_n_redirects.c\
 	srcs/redirects/redirects.c\
+	srcs/tools/redirect_tools.c\
 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 
@@ -21,7 +22,7 @@ NAME = minishell
 
 UBU = /usr/local
 MAC = /Users/abirthda/.brew
-USER = $(MAC)
+USER = $(UBU)
 
 INC = -Iincludes -Ilibft -I $(USER)/Cellar/readline/8.1/include
 
