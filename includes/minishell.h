@@ -28,6 +28,7 @@ typedef struct	s_all
 	struct termios	saved;
 	int				run_status;
 	int				exit_status;
+	int				last_exit;
 	char			**path;
 	char			**envp;
 	char			*binary;

@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-extern t_all    g_all;
+extern t_all	g_all;
 
 char	**get_path(char **envp)
 {
@@ -45,7 +45,6 @@ void	get_binary(t_command_list *cmd)
 	free(stats);
 }
 
-
 char	*get_shlvl(char *envp)
 {
 	int		shlvl;
@@ -53,7 +52,7 @@ char	*get_shlvl(char *envp)
 	char	*str;
 	char	*save;
 	char	*lvl;
-	
+
 	i = 0;
 	str = malloc(sizeof(char) * 7);
 	while ('0' > *envp || *envp > '9')
@@ -70,7 +69,6 @@ char	*get_shlvl(char *envp)
 	free(lvl);
 	free(save);
 	return (str);
-	
 }
 
 char	**save_envp(char **envp)
