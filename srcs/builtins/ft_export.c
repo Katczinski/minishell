@@ -223,12 +223,13 @@ int	find_envp(char *name, char **envp)
 	int len;
 
 	i = -1;
+	len = ft_strlen(name);
 	while (envp[++i])
 	{
-		len = 0;
-		while (envp[i][len] && envp[i][len] != '=')
-			len++;
-		if (!ft_strncmp(envp[i], name, len))
+		// len = 0;
+		// while (envp[i][len] && envp[i][len] != '=')
+		// 	len++;
+		if (!ft_strncmp(envp[i], name, len) && envp[i][len] == '=')
 			break ;
 	}
 	if (!envp[i])

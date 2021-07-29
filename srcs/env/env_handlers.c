@@ -97,5 +97,17 @@ char	**save_envp(char **envp)
 	}
 	if (shlvl == 1)
 		new_envp[i] = get_shlvl("SHLVL=0");
+
+//
+	// new_envp = malloc(sizeof(char *) * 5);
+	// new_envp[0] = strdup("a=0");
+	// new_envp[1] = strdup("aaa=1");
+	// new_envp[2] = strdup("abc=2");
+	// new_envp[3] = strdup("abcd=3");
+	// new_envp[4] = 0;
+	// while (envp[i])
+	// 	i++;
+
+//
 	return (new_envp);
 }
