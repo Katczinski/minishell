@@ -121,6 +121,15 @@ t_command_list	*next_pipe(t_command_list *cmd)
 	return (0);
 }
 
+void	free_and_exit(struct stat *stats, int **fd, int status)
+{
+	close_fd(fd);
+	free_darr((void **)fd);
+	ft_free();
+	free(stats);
+	exit(status);
+}
+
 void	exit_child(t_command_list *cmd, int **fd)
 {
 	struct stat	*stats;
@@ -130,32 +139,24 @@ void	exit_child(t_command_list *cmd, int **fd)
 	stats = (struct stat *)malloc(sizeof(struct stat));
 	dup2(g_all.std_in, STDIN_FILENO);
 	dup2(g_all.std_out, STDOUT_FILENO);
-	close_fd(fd);
 	ret = stat(cmd->command[0], stats);
 	dir = S_ISDIR(stats->st_mode);
-	free(stats);
 	if (ft_strchr(cmd->command[0], '/') == NULL)
 	{
 		printf("%s: command not found\n", cmd->command[0]);
-		free_darr((void **)fd);
-		ft_free();
-		exit(127);
+		free_and_exit(stats, fd, 127);
 	}
 	else if (ret && !dir)
 	{
 		printf("minishell: %s: no such file or directory\n",
 			cmd->command[0]);
-		free_darr((void **)fd);
-		ft_free();
-		exit(127);
+		free_and_exit(stats, fd, 127);
 	}
 	else if (!ret && dir)
 		printf("minishell: %s: is a directory\n", cmd->command[0]);
 	else if (!ret && !dir)
 		printf("minishell: permission denied: %s\n", cmd->command[0]);
-	free_darr((void **)fd);
-	ft_free();
-	exit(126);
+	free_and_exit(stats, fd, 126);
 }
 
 void	exec_builtin(t_command_list *cmd)
@@ -195,6 +196,23 @@ void	exec(t_command_list *cmd, int **fd)
 		exit_child(cmd, fd);
 }
 
+void	child(t_command_list *cmd, int **fd, int i)
+{
+	handle_redir(cmd);
+	if (is_redir(cmd->type))
+		exit(1);
+	if (i != 0 && g_all.fd_in == 0)
+		dup2(fd[i - 1][0], STDIN_FILENO);
+	if (next_pipe(cmd) && g_all.fd_out == 0)
+		dup2(fd[i][1], STDOUT_FILENO);
+	close_fd(fd);
+	if (g_all.exec)
+		exec(get_cmd(cmd), fd);
+	free_darr((void **)fd);
+	ft_free();
+	exit(g_all.exit_status);
+}
+
 void	ft_pipe(t_command_list *cmd, int **fd, int i)
 {
 	pid_t	pid;
@@ -205,25 +223,14 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 		pipe(fd[i]);
 	pid = fork();
 	if (pid == 0)
-	{
-		handle_redir(cmd);
-		if (is_redir(cmd->type))
-			exit(1);
-		if (i != 0 && g_all.fd_in == 0)
-			dup2(fd[i - 1][0], STDIN_FILENO);
-		if (next_pipe(cmd) && g_all.fd_out == 0)
-			dup2(fd[i][1], STDOUT_FILENO);
-		close_fd(fd);
-		if (g_all.exec)
-			exec(get_cmd(cmd), fd);
-		free_darr((void **)fd);
-		ft_free();
-		exit(g_all.exit_status);
-	}
+		child(cmd, fd, i);
 	ft_pipe(next_pipe(cmd), fd, ++i);
 	close_fd(fd);
 	waitpid(pid, &g_all.exit_status, 0);
 	set_status(g_all.exit_status);
+	if (i == g_all.args->elements)
+		g_all.last_exit = g_all.exit_status;
+
 }
 
 int	**create_fd(int num)
@@ -270,7 +277,10 @@ void	redir_and_exec(t_command_list *cmd)
 	stats = malloc(sizeof(struct stat));
 	exec_dredin(cmd);
 	if (next_pipe(cmd))
+	{
 		ft_pipe(cmd, fd, i);
+		g_all.exit_status = g_all.last_exit;
+	}
 	else
 	{
 		handle_redir(cmd);
