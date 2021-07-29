@@ -1,5 +1,46 @@
 #include "builtins.h"
 
+int	has_value(char *cmd)
+{
+	int	i;
+
+	i = -1;
+	while (cmd[++i])
+		if (cmd[i] == '=')
+			return (1);
+	return (0);
+}
+
+int	find_envp_to_del(char *name, char **envp)
+{
+	int i;
+	int len;
+
+	i = -1;
+	if (has_value(name))
+	{
+		while (envp[++i])
+		{
+			if (!ft_strcmp(envp[i], name))
+				break ;
+		}
+	}
+	else
+	{
+		while (envp[++i])
+		{
+			len = 0;
+			while (envp[i][len] && envp[i][len] != '=')
+				len++;
+			if (!ft_strncmp(envp[i], name, len))
+				break ;
+		}
+	}
+	if (!envp[i])
+		return (0);
+	return (1);
+}
+
 char	**delete_envp(char *cmd, char **envp, t_info *info)
 {
     char	**new_envp;
@@ -52,7 +93,7 @@ int	ft_unset(t_command_list *list, char ***envp, t_info *info)
 	i = 0;
 	while (list->command[++i])
 	{
-		if (find_envp(list->command[i], *envp))
+		if (find_envp_to_del(list->command[i], *envp))
 			*envp = delete_envp(list->command[i], *envp, info);
 		else
 			return (1);
