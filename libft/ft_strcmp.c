@@ -10,11 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./libft.h"
+#include "libft.h"
 
 int	ft_strcmp(const char *s1, const char *s2)
 {
-
 	while ((*s2 != '\0' || *s1 != '\0'))
 	{
 		if (*s2 != *s1)

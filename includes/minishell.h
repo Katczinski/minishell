@@ -42,9 +42,20 @@ typedef struct	s_all
 
 int					ft_putchar(int c);
 int					is_redir(int type);
+int					is_all_whitespaces(char *str);
+int					is_builtin(int type);
+int					event(void);
 int					heredoc_reader(int fd, t_command_list *cmd);
+void				get_binary(t_command_list *cmd);
+void				sigint_handler(int signo);
+void				sigint_cmd(int signo);
+void				sigquit_handler(int signo);
 void				ft_dup2(void);
 void				exec_dredin(t_command_list *cmd);
 void				handle_redir(t_command_list *cmd);
+void				free_darr(void **array);
+char				**get_path(char **envp);
+char				**save_envp(char **envp);
+char				*get_shlvl(char *envp);
 char				*subst_value(char *line);
 #endif

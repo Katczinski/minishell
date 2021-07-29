@@ -49,10 +49,3 @@ void	ft_dup2(void)
 		dup2(g_all.fd_out, STDOUT_FILENO);
 }
 
-int	is_redir(int type)
-{
-	if (type == RED_IN || type == DRED_IN
-		|| type == RED_OUT || type == DRED_OUT)
-		return (1);
-	return (0);
-}
