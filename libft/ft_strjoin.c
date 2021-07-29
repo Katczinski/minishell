@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./libft.h"
+#include "libft.h"
 
 char	*ft_strjoin(char const *s1, char const *s2)
 {
@@ -22,7 +22,6 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		return (0);
 	lens1 = ft_strlen(s1) + 1;
 	lens2 = ft_strlen(s2) + 1;
-	
 	result = (char *)malloc(sizeof(char) * (lens1 + lens2));
 	if (result)
 	{

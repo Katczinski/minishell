@@ -14,43 +14,12 @@
 
 t_all	g_all;
 
-int	is_all_whitespaces(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str && str[i] != '\0')
-	{
-		if ((str[i] < 9 || str[i] > 14) && str[i] != ' ')
-			return (0);
-		i++;
-	}
-	return (1);
-}
-
-int	is_builtin(int type)
-{
-	if (type == FT_ECHO || type == FT_PWD || type == FT_CD
-		|| type == FT_EXPORT || type == FT_UNSET || type == FT_ENV
-		|| type == FT_EXIT)
-		return (1);
-	return (0);
-}
-
-// int	is_redir(int type)
-// {
-// 	if (type == RED_IN || type == DRED_IN
-// 		|| type == RED_OUT || type == DRED_OUT)
-// 		return (1);
-// 	return (0);
-// }
-
 void	set_status(int status)
 {
 	if (WIFEXITED(status))
 		g_all.exit_status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
-		g_all.exit_status = 128 + WTERMSIG(status);	
+		g_all.exit_status = 128 + WTERMSIG(status);
 }
 
 void	free_darr(void **array)
@@ -95,84 +64,6 @@ void	ft_free(void)
 	g_all.args = 0;
 }
 
-int	event(void)
-{
-	return (0);
-}
-
-int	ft_putchar(int c)
-{
-	return (write(1, &c, 1));
-}
-
-void	sigint_handler(int signo)
-{
-	if (signo && signo == SIGINT)
-	{
-		g_all.exit_status = 1;
-		rl_redisplay();
-		rl_replace_line("", 0);
-		rl_done = 1;
-	}
-}
-
-void	sigint_cmd(int signo)
-{
-	if (signo && signo == SIGINT)
-		g_all.exit_status = 130;
-}
-
-void	sigquit_handler(int signo)
-{
-	if (signo && signo == SIGQUIT)
-		printf("Quit: %d\n", signo);
-}
-
-char	**get_path(char **envp)
-{
-	char	**path;
-
-	if (g_all.path)
-		free_darr((void **)g_all.path);
-	g_all.path = 0;
-	while (*envp != NULL && ft_strncmp(*envp, "PATH=", 5))
-		envp++;
-	if (*envp == NULL)
-		return (0);
-	path = ft_split(*envp + 5, ':');
-	return (path);
-}
-
-void	get_binary(t_command_list *cmd)
-{
-	char		*temp;
-	int			i;
-	struct stat	*stats;
-
-	stats = (struct stat *)malloc(sizeof(struct stat));
-	i = 0;
-	while (g_all.path && g_all.path[i])
-	{
-		temp = ft_strjoin(g_all.path[i], "/");
-		if (!temp)
-			exit(1);
-		g_all.binary = ft_strjoin(temp, cmd->command[0]);
-		free(temp);
-		if (!stat(g_all.binary, stats))
-			break ;
-		free(g_all.binary);
-		g_all.binary = 0;
-		i++;
-	}
-	if (!g_all.binary)
-	{
-		if (!stat(cmd->command[0], stats) && !(S_ISDIR(stats->st_mode))
-			&& ft_strchr(cmd->command[0], '/'))
-			g_all.binary = ft_strdup(cmd->command[0]);
-	}
-	free(stats);
-}
-
 void	close_fd(int **fd)
 {
 	int	i;
@@ -202,7 +93,7 @@ t_command_list	*find_cmd(t_command_list *cmd)
 {
 	t_command_list	*start;
 
-	start = cmd;	
+	start = cmd;
 	while (cmd && (cmd->type != COMMAND
 			&& !is_builtin(cmd->type) && cmd->type != PIPE))
 		cmd = cmd->next;
@@ -229,108 +120,6 @@ t_command_list	*next_pipe(t_command_list *cmd)
 		return (cmd->next);
 	return (0);
 }
-
-// char	*subst_value(char *line)
-// {
-// 	int	i;
-
-// 	i = 0;
-// 	if (ft_strchr(line, '$') == NULL)
-// 		return (line);
-// 	while (line && line[i] != '\0')
-// 	{
-// 		if (line[i] == '$')
-// 			line = treat_env(line, &i, g_all.envp, g_all.args);
-// 		i++;
-// 	}
-// 	return (line);
-// }
-
-// void	exec_dredin(t_command_list *cmd)
-// {
-// 	int		fd = 0;
-// 	char	*line;
-
-// 	while (cmd)
-// 	{
-// 		if (cmd->type == DRED_IN)
-// 		{
-// 			fd = open(".heredoc", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-// 			while (1)
-// 			{
-// 				line = readline("> ");
-// 				if (!line)
-// 					break ;
-// 				else if (line && ft_strcmp(line, cmd->command[0]))
-// 				{
-// 					if (!cmd->quoted)
-// 						line = subst_value(line);
-// 					ft_putendl_fd(line, fd);
-// 					free(line);
-// 				}
-// 				else
-// 				{	
-// 					free(line);
-// 					close(fd);
-// 					break ;
-// 				}
-// 			}		
-// 		}
-// 		cmd = cmd->next;
-// 	}
-// 	if (fd)
-// 		close(fd);
-// }
-
-// void	handle_redir(t_command_list *cmd)
-// {
-// 	int				fd_in = 0;
-// 	int				fd_out = 0;
-
-// 	while (cmd->prev && cmd->prev->type != PIPE)
-// 		cmd = cmd->prev;
-// 	while (cmd && cmd->type != PIPE)
-// 	{
-// 		if (is_redir(cmd->type))
-// 		{
-// 			if (cmd->type == RED_IN || cmd->type == DRED_IN)
-// 			{
-// 				if (fd_in)
-// 					close(fd_in);
-// 				if (cmd->type == RED_IN)
-// 					fd_in = open(cmd->command[0], O_RDONLY, 0644);
-// 				else if (cmd->type == DRED_IN)
-// 					fd_in = open(".heredoc", O_RDONLY, 0644);
-// 			}
-// 			else
-// 			{		
-// 				if (fd_out)
-// 					close(fd_out);
-// 				if (cmd->type == RED_OUT)
-// 					fd_out = open(cmd->command[0],
-// 							O_WRONLY | O_CREAT | O_TRUNC, 0644);
-// 				else if (cmd->type == DRED_OUT)
-// 					fd_out = open(cmd->command[0],
-// 							O_WRONLY | O_CREAT | O_APPEND, 0644);
-// 			}
-// 			if (fd_in == -1 || fd_out == -1)
-// 			{
-// 				printf("minishell: %s: No such file or directory\n", cmd->command[0]);
-// 				g_all.exit_status = 1;
-// 				break ;
-// 			}
-// 		}
-// 		cmd = cmd->next;
-// 	}
-// 	g_all.fd_in = fd_in;
-// 	g_all.fd_out = fd_out;
-// 	if (g_all.fd_in > 0)
-// 		dup2(g_all.fd_in, STDIN_FILENO);
-// 	if (g_all.fd_out > 0)
-// 		dup2(g_all.fd_out, STDOUT_FILENO);
-// 	if (g_all.fd_in == -1 || g_all.fd_out == -1)
-// 		g_all.exec = 0;
-// }
 
 void	exit_child(t_command_list *cmd, int **fd)
 {
@@ -401,11 +190,7 @@ void	exec(t_command_list *cmd, int **fd)
 		ft_free();
 	}
 	else if (is_builtin(cmd->type))
-	{
 		exec_builtin(cmd);
-	//	free_darr((void **)fd);
-	//	ft_free();
-	}
 	else
 		exit_child(cmd, fd);
 }
@@ -433,7 +218,6 @@ void	ft_pipe(t_command_list *cmd, int **fd, int i)
 			exec(get_cmd(cmd), fd);
 		free_darr((void **)fd);
 		ft_free();
-		// printf("exit_status = %d\n", g_all.exit_status);
 		exit(g_all.exit_status);
 	}
 	ft_pipe(next_pipe(cmd), fd, ++i);
@@ -463,8 +247,8 @@ int	**create_fd(int num)
 			free(fd);
 			return (0);
 		}
-		fd[i][0] = -1;
-		fd[i][1] = -1;
+		fd[i][0] = 0;
+		fd[i][1] = 0;
 		i++;
 	}
 	fd[num - 1] = NULL;
@@ -478,13 +262,6 @@ void	redir_and_exec(t_command_list *cmd)
 	int			i;
 	pid_t		pid;
 
-	cmd = find_cmd(cmd);
-	if (!cmd)
-	{
-		printf("minishell: : command not found\n");
-		g_all.exit_status = 127;
-		return ;
-	}
 	pid = -1;
 	i = 0;
 	fd = 0;
@@ -503,7 +280,6 @@ void	redir_and_exec(t_command_list *cmd)
 		{
 			if (g_all.exec)
 				exec(get_cmd(cmd), fd);
-			
 			free_darr((void **)fd);
 			ft_free();
 		}
@@ -532,13 +308,20 @@ void	redir_and_exec(t_command_list *cmd)
 void	execute(void)
 {
 	t_command_list	*cmd;
+
 	tcsetattr(STDIN_FILENO, TCSANOW, &g_all.saved);
 	signal(SIGQUIT, &sigquit_handler);
 	signal(SIGINT, &sigint_cmd);
 	g_all.std_in = dup(STDIN_FILENO);
 	g_all.std_out = dup(STDOUT_FILENO);
-	cmd = g_all.args->head;
-	redir_and_exec(cmd);
+	cmd = find_cmd(g_all.args->head);
+	if (!cmd)
+	{
+		printf("minishell: : command not found\n");
+		g_all.exit_status = 127;
+	}
+	else
+		redir_and_exec(cmd);
 	dup2(g_all.std_in, STDIN_FILENO);
 	dup2(g_all.std_out, STDOUT_FILENO);
 	close(g_all.std_in);
@@ -567,9 +350,7 @@ void	loop(void)
 		if (line[0] != '\0' && !is_all_whitespaces(line))
 		{
 			add_history(line);
-	//		printf("parsing\n");
 			g_all.args = parser(line, g_all.envp, g_all.exit_status);
-			// printf("executing\n");
 			if (g_all.args)
 				execute();
 			else
@@ -581,59 +362,6 @@ void	loop(void)
 		else
 			free(line);
 	}
-}
-
-char	*get_shlvl(char *envp)
-{
-	int		shlvl;
-	int		i;
-	char	*str;
-	char	*save;
-	
-	i = 0;
-	str = malloc(sizeof(char) * 7);
-	while ('0' > *envp || *envp > '9')
-	{
-		str[i] = *envp;
-		envp++;
-		i++;
-	}
-	str[i] = '\0';
-	shlvl = ft_atoi(envp) + 1;
-	save = str;
-	str = ft_strjoin(str, ft_itoa(shlvl));
-	free(save);
-	return (str);
-	
-}
-
-char	**save_envp(char **envp)
-{
-	int		i;
-	char	**new_envp;
-	int		shlvl;
-
-	shlvl = 1;
-	i = 0;
-	while (envp[i])
-	{
-		if (!ft_strncmp(envp[i], "SHLVL=", 6))
-			shlvl--;
-		i++;
-	}
-	new_envp = malloc(sizeof(char *) * (i + shlvl + 1));
-	new_envp[i + shlvl] = 0;
-	i = -1;
-	while (envp[++i])
-	{
-		if (!ft_strncmp(envp[i], "SHLVL=", 6))
-			new_envp[i] = get_shlvl(envp[i]);
-		else
-			new_envp[i] = ft_strdup(envp[i]);
-	}
-	if (shlvl == 1)
-		new_envp[i] = get_shlvl("SHLVL=0");
-	return (new_envp);
 }
 
 int	main(int argc, char **argv, char **envp)
