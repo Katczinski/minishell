@@ -28,38 +28,39 @@
 
 typedef struct s_command_list
 {
-	int					type;
-	int					quoted;
-	char    			**command;
-	int					lines;
-	struct	s_command_list	*next;
-	struct	s_command_list	*prev;
-}   				t_command_list;
+	int						type;
+	int						quoted;
+	char					**command;
+	int						lines;
+	struct s_command_list	*next;
+	struct s_command_list	*prev;
+}				t_command_list;
 
 typedef struct s_info
 {
-    t_command_list		*head;
-    t_command_list		*tail;
+	t_command_list		*head;
+	t_command_list		*tail;
 	int					status;
-    int				elements;
-}  				t_info;
+	int					elements;
+	int					quotes;
+	int					dquotes;
+	int					redirects;
+}				t_info;
 
-
-
-//Utils
-int				get_next_line(int fd, char **line);
 int				print_error(char *msg, t_info *info, int mode);
 int				skip_whitespaces(int i, char *line);
-int check_pipes_n_redirects(char *line);
-char	    			**ft_split_modified(char const *s);
-char				*treat_env(char *line, int *i, char **envp, t_info *info);
-char *treat_space(char *line, int *i, char **envp, t_info *info);
-//Parsing
-t_info	*init_struct(int status);
-t_info 				*parser(char *line, char **envp, int status);
-t_command_list			*init_element(t_info *info);
-void				add_element(t_command_list *element, t_info *info);
-char				**add_line_to_cmd(char *line, t_command_list *cmd, t_info *info);
-
+// int				check_pipes_n_redirects(char *line);
+char			*treat_env(char *line, int *i, char **envp, t_info *info);
+char			*treat_space(char *line, int *i, char **envp, t_info *info);
+t_info			*init_struct(int status);
+t_info			*parser(char *line, char **envp, int status);
+t_command_list	*init_element(t_info *info);
+void			add_element(t_command_list *element, t_info *info);
+char			**add_line_to_cmd(char *line,
+					t_command_list *cmd, t_info *info);
+//line checks
+// int				redirects_check(char *line, int i);
+// int				pipes_check(char *line, int i);
+int				line_check(char *line, t_info *info);
 
 #endif

@@ -3,7 +3,7 @@
 int	ft_echo(t_command_list *list)
 {
 	int	i;
-	int new_line;
+	int	new_line;
 
 	i = 0;
 	new_line = 0;
