@@ -16,7 +16,7 @@ SRCS = minishell.c\
 	srcs/builtins/ft_env.c\
 	srcs/builtins/ft_exit.c\
 	srcs/utils/print_error.c\
-	srcs/utils/check_pipes_n_redirects.c\
+	srcs/utils/backward_skip_whitespaces.c\
 	srcs/utils/ft_export_utils_for_print.c\
 	srcs/utils/ft_export_utils_for_add.c\
 	srcs/redirects/redirects.c\

@@ -78,30 +78,22 @@ typedef struct s_ft_dquote
 
 int				print_error(char *msg, t_info *info, int mode);
 int				skip_whitespaces(int i, char *line);
-// int				check_pipes_n_redirects(char *line);
-
-
 char			*treat_env(char *line, int *i, char **envp, t_info *info);
 char			*treat_quote(char *line, int *i, t_info *info);
 char			*treat_dquote(char *line, int *i, char **envp, t_info *info);
 char			*treat_pipe(char *line, int *i, t_info *info);
 int				copy_prev_line(t_info *info, int *i, char *line);
 char			*treat_redirect(char *line, int *i, char **envp, t_info *info);
-
-
-
-void ft_free_lines(char *str1, char *str2, char *str3, char *str4);
-
 char			*treat_space(char *line, int *i, char **envp, t_info *info);
+
+
+void			ft_free_lines(char *str1, char *str2, char *str3, char *str4);
 t_info			*init_struct(int status);
 t_info			*parser(char *line, char **envp, int status);
 t_command_list	*init_element(t_info *info);
 void			add_element(t_command_list *element, t_info *info);
 char			**add_line_to_cmd(char *line,
 					t_command_list *cmd, t_info *info);
-//line checks
-// int				redirects_check(char *line, int i);
-// int				pipes_check(char *line, int i);
 int				line_check(char *line, t_info *info);
 
 #endif
