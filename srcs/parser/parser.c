@@ -1,6 +1,5 @@
 #include "parser.h"
 
-
 void ft_free_lines(char *str1, char *str2, char *str3, char *str4)
 {
 	if (str1)
@@ -13,266 +12,209 @@ void ft_free_lines(char *str1, char *str2, char *str3, char *str4)
 		free(str4);
 }
 
-char	*treat_env(char *line, int *i, char **envp, t_info *info)
-{
-	int		start;
-	int 	j;
-	char	*prev_str;
-	char	*curr_str;
-	char	*key;
-	char	*next_str;
-	char	*output;
-	char	*tmp;
+// char	*treat_quote(char *line, int *i, t_info *info)
+// {
+// 	int		frst_quote;
+// 	char	*prev_str;
+// 	char	*curr_str = NULL;
+// 	char	*next_str;
+// 	char	*output;
+// 	char	*tmp;
 
-	start = *i;
-	if (line[start + 1] != '_' && line[start + 1] != '?' && !ft_isalnum(line[start + 1]))
-		return (line);
-	prev_str = malloc(sizeof(char) * (*i + 1));
-	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
-	while (line[++(*i)])
-	{
-		if ((line[*i + 1] != '_' && !ft_isalnum(line[*i + 1])) || (line[*i] != '_' && !ft_isalnum(line[*i])))
-		{
-			key = malloc(sizeof(char) * ((*i) - start + 1));
-			key = ft_memcpy(key, line + start + 1, (size_t)((*i) - start));
-			break ;
-		}
-	}
-	next_str = strdup(line + *i + 1);
-	j = -1;
-	curr_str = 0;
-	while (envp[++j])
-	{
-		if (!ft_strncmp(key, envp[j], ft_strlen(key)) && envp[j][ft_strlen(key)] == '=')
-		{
-			curr_str = malloc(sizeof(char) * (ft_strlen(envp[j]) - ft_strlen(key)) + 1);
-			curr_str = ft_memcpy(curr_str, envp[j] + ft_strlen(key) + 1, ft_strlen(envp[j]) - ft_strlen(key));
-			break ;
-		}
-	}
-	if (key[0] == '?' && !key[1] && !curr_str)
-		curr_str = ft_itoa(info->status);
-	if (!curr_str && !envp[j])
-	{
-		*i = start - 1;
-		output = ft_strjoin(prev_str, next_str);
-		ft_free_lines(prev_str, curr_str, next_str, key);
-		free(line);
-		return (output);
-	}
-	tmp = ft_strjoin(prev_str, curr_str);
-	output = ft_strjoin(tmp, next_str);
-	free(tmp);
-	if (curr_str)
-		*i = ft_strlen(curr_str) - 1;
-	ft_free_lines(prev_str, curr_str, next_str, key);
-		free(line);
-	return (output);
-}
+// 	frst_quote = *i;
+// 	prev_str = malloc(sizeof(char) * (*i + 1));
+// 	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+// 	if (info->tail && info->tail->type == DRED_IN)
+// 		info->tail->quoted = 1;
+// 	while (line[++(*i)])
+// 	{
+// 		if (line[*i] == '\'' )
+// 		{
+// 			curr_str = malloc(sizeof(char) * ((*i) - frst_quote));
+// 			curr_str = ft_memcpy(curr_str, line + frst_quote + 1, (size_t)((*i) - frst_quote - 1));
+// 			break;
+// 		}
+// 	}
+// 	tmp = ft_strjoin(prev_str, curr_str);
+// 	next_str = ft_strdup(line + *i + 1);
+// 	output = ft_strjoin(tmp, next_str);
+// 	free(tmp);
+// 	*i = (*i) - 2;
+// 	ft_free_lines(prev_str, curr_str, next_str, line);
+// 	return (output);
+// }
 
-char	*treat_quote(char *line, int *i, t_info *info)
-{
-	int		frst_quote;
-	char	*prev_str;
-	char	*curr_str = NULL;
-	char	*next_str;
-	char	*output;
-	char	*tmp;
+// char	*treat_dquote(char *line, int *i, char **envp, t_info *info)
+// {
+// 	int		frst_quote;
+// 	char	*prev_str;
+// 	char	*curr_str = NULL;
+// 	char	*next_str;
+// 	char	*output;
+// 	char	*tmp;
 
-	frst_quote = *i;
-	prev_str = malloc(sizeof(char) * (*i + 1));
-	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
-	if (info->tail && info->tail->type == DRED_IN)
-		info->tail->quoted = 1;
-	while (line[++(*i)])
-	{
-		if (line[*i] == '\'' )
-		{
-			curr_str = malloc(sizeof(char) * ((*i) - frst_quote));
-			curr_str = ft_memcpy(curr_str, line + frst_quote + 1, (size_t)((*i) - frst_quote - 1));
-			break;
-		}
-	}
-	tmp = ft_strjoin(prev_str, curr_str);
-	next_str = ft_strdup(line + *i + 1);
-	output = ft_strjoin(tmp, next_str);
-	free(tmp);
-	*i = (*i) - 2;
-	ft_free_lines(prev_str, curr_str, next_str, line);
-	return (output);
-}
+// 	frst_quote = *i;
+// 	prev_str = malloc(sizeof(char) * (*i + 1));
+// 	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+// 	if (info->tail && info->tail->type == DRED_IN)
+// 		info->tail->quoted = 1;
+// 	while (line[++(*i)])
+// 	{
+// 		if (line[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
+// 			line = treat_env(line, i, envp, info);
+// 		if (line[*i] == '\"')
+// 		{
+// 			curr_str = malloc(sizeof(char) * ((*i) - frst_quote));
+// 			curr_str = ft_memcpy(curr_str, line + frst_quote + 1, (size_t)((*i) - frst_quote - 1));
+// 			break;
+// 		}			
+// 	}
+// 	tmp = ft_strjoin(prev_str, curr_str);
+// 	if (!tmp)
+// 		print_error(strerror(errno), info, 1);
+// 	next_str = ft_strdup(line + *i + 1);
+// 	if (!next_str)
+// 		print_error(strerror(errno), info, 1);
+// 	output = ft_strjoin(tmp, next_str);
+// 	if (!output)
+// 		print_error(strerror(errno), info, 1);
+// 	free(tmp);
+// 	*i = (*i) - 2;
+// 	ft_free_lines(prev_str, curr_str, next_str, line);
+// 	return (output);
+// }
 
-char	*treat_dquote(char *line, int *i, char **envp, t_info *info)
-{
-	int		frst_quote;
-	char	*prev_str;
-	char	*curr_str = NULL;
-	char	*next_str;
-	char	*output;
-	char	*tmp;
+// int	find_red_in(char *line)
+// {
+// 	int	i;
 
-	frst_quote = *i;
-	prev_str = malloc(sizeof(char) * (*i + 1));
-	prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
-	if (info->tail && info->tail->type == DRED_IN)
-		info->tail->quoted = 1;
-	while (line[++(*i)])
-	{
-		if (line[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
-			line = treat_env(line, i, envp, info);
-		if (line[*i] == '\"')
-		{
-			curr_str = malloc(sizeof(char) * ((*i) - frst_quote));
-			curr_str = ft_memcpy(curr_str, line + frst_quote + 1, (size_t)((*i) - frst_quote - 1));
-			break;
-		}			
-	}
-	tmp = ft_strjoin(prev_str, curr_str);
-	if (!tmp)
-		print_error(strerror(errno), info, 1);
-	next_str = ft_strdup(line + *i + 1);
-	if (!next_str)
-		print_error(strerror(errno), info, 1);
-	output = ft_strjoin(tmp, next_str);
-	if (!output)
-		print_error(strerror(errno), info, 1);
-	free(tmp);
-	*i = (*i) - 2;
-	ft_free_lines(prev_str, curr_str, next_str, line);
-	return (output);
-}
+// 	i = 0;
+// 	ft_skip_whitespaces(&i, line);
+// 	if (line[i] == '<' || line[i] == '>')
+// 		return (1);
+// 	return (0);
+// }
 
-int	find_red_in(char *line)
-{
-	int	i;
+// char	*treat_pipe(char *line, int *i, t_info *info)
+// {
+// 	char	*output;
+// 	char	*prev_str;
 
-	i = 0;
-	ft_skip_whitespaces(&i, line);
-	if (line[i] == '<' || line[i] == '>')
-		return (1);
-	return (0);
-}
+// 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
+// 		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 >= 0 && line[*i - 1]) || (!info->tail && *i - 1 >= 0 && line[*i - 1]))
+// 	{
+// 		prev_str = malloc(sizeof(char) * (*i + 1));
+// 		if (!prev_str)
+// 		{
+// 			print_error(strerror(errno), info, 1);
+// 			return (0);
+// 		}
+// 		prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+// 		if (!info->tail)
+// 			add_element(init_element(info), info);
+// 		info->tail->lines++;
+// 		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
+// 	}
+// 	if (line[*i] == '|')
+// 		*i = (*i) + 1;
+// 	add_element(init_element(info), info);
+// 	info->tail->type = PIPE;
+// 	ft_skip_whitespaces(i, line);
+// 	output = ft_strdup(line + *i);
+// 	if (!find_red_in(output))
+// 		add_element(init_element(info), info);
+// 	*i = -1;
+// 	ft_free_lines(line, 0, 0, 0);
+// 	return (output);
+// }
 
-char	*treat_pipe(char *line, int *i, t_info *info)
-{
-	char	*output;
-	char	*prev_str;
+// char	*add_red_in(char *line, int *i, char **envp, t_info *info)
+// {
+// 	char	*file_name;
+// 	char	*output;
 
-	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 >= 0 && line[*i - 1]) || (!info->tail && *i - 1 >= 0 && line[*i - 1]))
-	{
-		prev_str = malloc(sizeof(char) * (*i + 1));
-		if (!prev_str)
-		{
-			print_error(strerror(errno), info, 1);
-			return (0);
-		}
-		prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
-		if (!info->tail)
-			add_element(init_element(info), info);
-		info->tail->lines++;
-		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
-	}
-	if (line[*i] == '|')
-		*i = (*i) + 1;
-	add_element(init_element(info), info);
-	info->tail->type = PIPE;
-	ft_skip_whitespaces(i, line);
-	output = ft_strdup(line + *i);
-	if (!find_red_in(output))
-		add_element(init_element(info), info);
-	*i = -1;
-	ft_free_lines(line, 0, 0, 0);
-	return (output);
-}
+// 	*i = 0;
+// 	while (line[(*i)] && line[*i] != ' ' && line[*i] != '<' && line[*i] != '>' && line[*i] != '|')
+// 	{
+// 		if (line[*i] == '\'')
+// 			line = treat_quote(line, i, info);
+// 		else if (line[*i] == '\"')
+// 			line = treat_dquote(line, i, envp, info);
+// 		else if (line[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
+// 			line = treat_env(line, i, envp, info);
+// 		(*i)++;
+// 	}
+// 	file_name = malloc(sizeof(char) * (*i + 1));
+// 	file_name = ft_memcpy(file_name, line, *i);
+// 	info->tail->lines++;
+// 	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
+// 	ft_skip_whitespaces(i, line);
+// 	output = ft_strdup(line + *i);
+// 	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
+// 		add_element(init_element(info), info);
+// 	ft_free_lines(line, 0, 0, 0);
+// 	return (output);
+// }
 
-char	*add_red_in(char *line, int *i, char **envp, t_info *info)
-{
-	char	*file_name;
-	char	*output;
+// int	find_comand(t_command_list *list)
+// {
+// 	t_command_list *tmp;
 
-	*i = 0;
-	while (line[(*i)] && line[*i] != ' ' && line[*i] != '<' && line[*i] != '>' && line[*i] != '|')
-	{
-		if (line[*i] == '\'')
-			line = treat_quote(line, i, info);
-		else if (line[*i] == '\"')
-			line = treat_dquote(line, i, envp, info);
-		else if (line[*i] == '$' && (!info->tail || (info->tail && info->tail->type != DRED_IN)))
-			line = treat_env(line, i, envp, info);
-		(*i)++;
-	}
-	file_name = malloc(sizeof(char) * (*i + 1));
-	file_name = ft_memcpy(file_name, line, *i);
-	info->tail->lines++;
-	info->tail->command = add_line_to_cmd(file_name, info->tail, info);
-	ft_skip_whitespaces(i, line);
-	output = ft_strdup(line + *i);
-	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
-		add_element(init_element(info), info);
-	ft_free_lines(line, 0, 0, 0);
-	return (output);
-}
+// 	tmp = list;
+// 	while (tmp && tmp->type != PIPE)
+// 	{
+// 		if (!tmp->type)
+// 			return (1);
+// 		tmp = tmp->prev;
+// 	}
+// 	return (0);
+// }
 
-int	find_comand(t_command_list *list)
-{
-	t_command_list *tmp;
+// char	*treat_redirect(char *line, int *i, char **envp, t_info *info)
+// {
+// 	char	*output;
+// 	char	*prev_str;
+// 	int		type;
 
-	tmp = list;
-	while (tmp && tmp->type != PIPE)
-	{
-		if (!tmp->type)
-			return (1);
-		tmp = tmp->prev;
-	}
-	return (0);
-}
-
-char	*treat_redirect(char *line, int *i, char **envp, t_info *info)
-{
-	char	*output;
-	char	*prev_str;
-	int		type;
-
-	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
-		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 >= 0 && line[*i - 1]) || (!info->tail && *i - 1 >= 0 && line[*i - 1]))
-	{
-		prev_str = malloc(sizeof(char) * (*i + 1));
-		if (!prev_str)
-		{
-			print_error(strerror(errno), info, 1);
-			return (0);
-		}
-		prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
-		if (!info->tail)
-			add_element(init_element(info), info);
-		info->tail->lines++;
-		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
-	}
-	type = 0;
-	if (line[*i] == '>' && line[*i + 1] != '>')
-		type = RED_OUT;
-	else if (line[*i] == '>' && line[*i + 1] == '>')
-		type = DRED_OUT;
-	else if (line[*i] == '<' && line[*i + 1] != '<')
-		type = RED_IN;
-	else if (line[*i] == '<' && line[*i + 1] == '<')
-		type = DRED_IN;
-	(*i)++;
-	if (line[*i] == '>' || line[*i] == '<')
-		(*i)++;
-	add_element(init_element(info), info);
-	info->tail->type = type;
-	ft_skip_whitespaces(i, line);
-	output = ft_strdup(line + *i);
-	if ((type == RED_IN || type == DRED_IN || type == RED_OUT || type == DRED_OUT) && (!info->tail->prev
-	|| info->tail->prev->type == PIPE || info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
-	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT) && !find_comand(info->tail))
-		output = add_red_in(output, i, envp, info);
-	*i = -1;
-	ft_free_lines(line, 0, 0, 0);
-	return (output);
-}
+// 	if ((info->tail && (!info->tail->type || info->tail->type == RED_IN || info->tail->type == DRED_IN
+// 		|| info->tail->type == RED_OUT || info->tail->type == DRED_OUT) && *i - 1 >= 0 && line[*i - 1]) || (!info->tail && *i - 1 >= 0 && line[*i - 1]))
+// 	{
+// 		prev_str = malloc(sizeof(char) * (*i + 1));
+// 		if (!prev_str)
+// 		{
+// 			print_error(strerror(errno), info, 1);
+// 			return (0);
+// 		}
+// 		prev_str = ft_memcpy(prev_str, line, (size_t)(*i));
+// 		if (!info->tail)
+// 			add_element(init_element(info), info);
+// 		info->tail->lines++;
+// 		info->tail->command = add_line_to_cmd(prev_str, info->tail, info);
+// 	}
+// 	type = 0;
+// 	if (line[*i] == '>' && line[*i + 1] != '>')
+// 		type = RED_OUT;
+// 	else if (line[*i] == '>' && line[*i + 1] == '>')
+// 		type = DRED_OUT;
+// 	else if (line[*i] == '<' && line[*i + 1] != '<')
+// 		type = RED_IN;
+// 	else if (line[*i] == '<' && line[*i + 1] == '<')
+// 		type = DRED_IN;
+// 	(*i)++;
+// 	if (line[*i] == '>' || line[*i] == '<')
+// 		(*i)++;
+// 	add_element(init_element(info), info);
+// 	info->tail->type = type;
+// 	ft_skip_whitespaces(i, line);
+// 	output = ft_strdup(line + *i);
+// 	if ((type == RED_IN || type == DRED_IN || type == RED_OUT || type == DRED_OUT) && (!info->tail->prev
+// 	|| info->tail->prev->type == PIPE || info->tail->prev->type == RED_IN || info->tail->prev->type == DRED_IN
+// 	|| info->tail->prev->type == RED_OUT || info->tail->prev->type == DRED_OUT) && !find_comand(info->tail))
+// 		output = add_red_in(output, i, envp, info);
+// 	*i = -1;
+// 	ft_free_lines(line, 0, 0, 0);
+// 	return (output);
+// }
 
 int	check_last_arg(char **output, char **envp, int *i, t_info *info)
 {
@@ -470,5 +412,6 @@ t_info *parser(char *line, char **envp, int status)
 	}
 	set_types(info);
 	post_treat(info);
+	// print_list(info);
 	return (info);
 }

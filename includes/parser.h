@@ -47,10 +47,51 @@ typedef struct s_info
 	int					redirects;
 }				t_info;
 
+typedef struct s_ft_env
+{
+	char	*prev_str;
+	char	*curr_str;
+	char	*next_str;
+	char	*tmp;
+	char	*key;
+	int		start;
+	int		j;
+}				t_ft_env;
+
+typedef struct s_ft_quote
+{
+	char	*prev_str;
+	char	*curr_str;
+	char	*next_str;
+	char	*tmp;
+	int		frst_quote;
+}				t_ft_quote;
+
+typedef struct s_ft_dquote
+{
+	char	*prev_str;
+	char	*curr_str;
+	char	*next_str;
+	char	*tmp;
+	int		frst_quote;
+}				t_ft_dquote;
+
 int				print_error(char *msg, t_info *info, int mode);
 int				skip_whitespaces(int i, char *line);
 // int				check_pipes_n_redirects(char *line);
+
+
 char			*treat_env(char *line, int *i, char **envp, t_info *info);
+char			*treat_quote(char *line, int *i, t_info *info);
+char			*treat_dquote(char *line, int *i, char **envp, t_info *info);
+char			*treat_pipe(char *line, int *i, t_info *info);
+int				copy_prev_line(t_info *info, int *i, char *line);
+char			*treat_redirect(char *line, int *i, char **envp, t_info *info);
+
+
+
+void ft_free_lines(char *str1, char *str2, char *str3, char *str4);
+
 char			*treat_space(char *line, int *i, char **envp, t_info *info);
 t_info			*init_struct(int status);
 t_info			*parser(char *line, char **envp, int status);

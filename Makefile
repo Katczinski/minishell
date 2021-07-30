@@ -3,6 +3,11 @@ SRCS = minishell.c\
 	srcs/parser/init.c\
 	srcs/parser/parser.c\
 	srcs/parser/line_checks.c\
+	srcs/parser/treat_env.c\
+	srcs/parser/treat_quote.c\
+	srcs/parser/treat_dquote.c\
+	srcs/parser/treat_pipe.c\
+	srcs/parser/treat_redirect.c\
 	srcs/builtins/ft_echo.c\
 	srcs/builtins/ft_cd.c\
 	srcs/builtins/ft_pwd.c\
