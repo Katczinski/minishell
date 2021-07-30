@@ -49,7 +49,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 		(*i)++;
 	}
 	output = save_output(line, i, info);
-	ft_free_lines(line, 0, 0, 0);
+	free(line);
 	return (output);
 }
 
@@ -93,6 +93,6 @@ char	*treat_redirect(char *line, int *i, char **envp, t_info *info)
 			|| info->tail->prev->type == DRED_OUT) && !find_comand(info->tail))
 		output = add_red_in(output, i, envp, info);
 	*i = -1;
-	ft_free_lines(line, 0, 0, 0);
+	free(line);
 	return (output);
 }

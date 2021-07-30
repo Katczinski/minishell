@@ -87,7 +87,7 @@ char			*treat_redirect(char *line, int *i, char **envp, t_info *info);
 char			*treat_space(char *line, int *i, char **envp, t_info *info);
 
 
-void			ft_free_lines(char *str1, char *str2, char *str3, char *str4);
+// void			ft_free_lines(char *str1, char *str2, char *str3, char *str4);
 t_info			*init_struct(int status);
 t_info			*parser(char *line, char **envp, int status);
 t_command_list	*init_element(t_info *info);

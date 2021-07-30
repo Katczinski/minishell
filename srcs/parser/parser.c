@@ -1,16 +1,16 @@
 #include "parser.h"
 
-void ft_free_lines(char *str1, char *str2, char *str3, char *str4)
-{
-	if (str1)
-		free(str1);
-	if (str2)
-		free(str2);
-	if (str3)
-		free(str3);
-	if (str4)
-		free(str4);
-}
+// void ft_free_lines(char *str1, char *str2, char *str3, char *str4)
+// {
+// 	if (str1)
+// 		free(str1);
+// 	if (str2)
+// 		free(str2);
+// 	if (str3)
+// 		free(str3);
+// 	if (str4)
+// 		free(str4);
+// }
 
 // char	*treat_quote(char *line, int *i, t_info *info)
 // {

@@ -50,6 +50,6 @@ char	*treat_pipe(char *line, int *i, t_info *info)
 	if (!find_red_in(output))
 		add_element(init_element(info), info);
 	*i = -1;
-	ft_free_lines(line, 0, 0, 0);
+	free(line);
 	return (output);
 }
