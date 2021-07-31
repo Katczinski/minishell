@@ -8,6 +8,7 @@ SRCS = minishell.c\
 	srcs/parser/treat_dquote.c\
 	srcs/parser/treat_pipe.c\
 	srcs/parser/treat_redirect.c\
+	srcs/parser/treat_space.c\
 	srcs/builtins/ft_echo.c\
 	srcs/builtins/ft_cd.c\
 	srcs/builtins/ft_pwd.c\

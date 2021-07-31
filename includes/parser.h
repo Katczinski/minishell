@@ -85,15 +85,13 @@ char			*treat_pipe(char *line, int *i, t_info *info);
 int				copy_prev_line(t_info *info, int *i, char *line);
 char			*treat_redirect(char *line, int *i, char **envp, t_info *info);
 char			*treat_space(char *line, int *i, char **envp, t_info *info);
-
-
-// void			ft_free_lines(char *str1, char *str2, char *str3, char *str4);
 t_info			*init_struct(int status);
 t_info			*parser(char *line, char **envp, int status);
 t_command_list	*init_element(t_info *info);
 void			add_element(t_command_list *element, t_info *info);
 char			**add_line_to_cmd(char *line,
 					t_command_list *cmd, t_info *info);
+void			throw_args_to_cmd(t_command_list *list, t_info *info);
 int				line_check(char *line, t_info *info);
 
 #endif

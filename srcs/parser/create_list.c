@@ -60,3 +60,32 @@ char	**add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
 	free(line);
 	return (arr);
 }
+
+void	throw_args_to_cmd(t_command_list *list, t_info *info)
+{
+	t_command_list	*tmp;
+	int				i;
+
+	tmp = list;
+	while (tmp)
+	{
+		if (tmp->type == COMMAND || tmp->type == FT_ECHO || tmp->type == FT_CD
+			|| tmp->type == FT_PWD || tmp->type == FT_EXPORT
+			|| tmp->type == FT_UNSET || tmp->type == FT_EXIT
+			|| tmp->type == FT_ENV)
+			break ;
+		tmp = tmp->prev;
+	}
+	i = 1;
+	if (tmp && tmp->command)
+	{
+		while (i < list->lines)
+		{
+			tmp->lines++;
+			tmp->command = add_line_to_cmd(list->command[i], tmp, info);
+			i++;
+		}
+		list->lines = 1;
+		list->command[1] = 0;
+	}
+}

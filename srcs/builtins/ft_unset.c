@@ -92,14 +92,16 @@ char	**delete_envp(char *cmd, char **envp, t_info *info)
 int	ft_unset(t_command_list *list, char ***envp, t_info *info)
 {
 	int	i;
+	int	ret;
 
 	i = 0;
+	ret = 0;
 	while (list->command[++i])
 	{
 		if (find_envp_to_del(list->command[i], *envp))
 			*envp = delete_envp(list->command[i], *envp, info);
 		else
-			return (1);
+			ret = 1;
 	}
-	return (0);
+	return (ret);
 }
