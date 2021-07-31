@@ -48,4 +48,3 @@ void	ft_dup2(void)
 	if (g_all.fd_out > 0)
 		dup2(g_all.fd_out, STDOUT_FILENO);
 }
-

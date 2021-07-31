@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-extern t_all    g_all;
+extern t_all	g_all;
 
 void	set_term(void)
 {

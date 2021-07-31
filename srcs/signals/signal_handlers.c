@@ -2,6 +2,14 @@
 
 extern t_all	g_all;
 
+void	set_status(int status)
+{
+	if (WIFEXITED(status))
+		g_all.exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		g_all.exit_status = 128 + WTERMSIG(status);
+}
+
 void	sigint_handler(int signo)
 {
 	if (signo && signo == SIGINT)

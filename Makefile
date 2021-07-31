@@ -14,10 +14,12 @@ SRCS = minishell.c\
 	srcs/utils/print_error.c\
 	srcs/utils/check_pipes_n_redirects.c\
 	srcs/redirects/redirects.c\
+	srcs/free/free_and_exit.c\
 	srcs/tools/redirect_tools.c\
 	srcs/tools/is_tools.c\
 	srcs/tools/term_tools.c\
 	srcs/tools/cmd_tools.c\
+	srcs/tools/fd_tools.c\
 	srcs/signals/signal_handlers.c\
 	srcs/env/env_handlers.c\
 	srcs/exec/exec.c\

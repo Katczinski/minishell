@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-extern t_all    g_all;
+extern t_all	g_all;
 
 void	exec_builtin(t_command_list *cmd)
 {
@@ -29,7 +29,7 @@ void	exec(t_command_list *cmd, int **fd)
 	if (g_all.binary && cmd->type == COMMAND)
 	{
 		if (execve(g_all.binary, cmd->command, g_all.envp) == -1)
-			exit_child(cmd, fd); //perror
+			exit_child(cmd, fd);
 		free_darr((void **)fd);
 		ft_free();
 	}
@@ -43,6 +43,8 @@ void	exec_single_cmd(t_command_list *cmd, pid_t pid, int **fd)
 {
 	if (pid == 0)
 	{
+		close(g_all.std_in);
+		close(g_all.std_out);
 		if (g_all.exec)
 			exec(get_cmd(cmd), fd);
 		free_darr((void **)fd);
@@ -63,6 +65,9 @@ void	exec_single_cmd(t_command_list *cmd, pid_t pid, int **fd)
 
 void	child(t_command_list *cmd, int **fd, int i)
 {
+	cmd = find_cmd(cmd);
+	close(g_all.std_in);
+	close(g_all.std_out);
 	handle_redir(cmd);
 	if (is_redir(cmd->type))
 		exit(1);
@@ -72,7 +77,7 @@ void	child(t_command_list *cmd, int **fd, int i)
 		dup2(fd[i][1], STDOUT_FILENO);
 	close_fd(fd);
 	if (g_all.exec)
-		exec(get_cmd(cmd), fd);
+		exec(cmd, fd);
 	free_darr((void **)fd);
 	ft_free();
 	exit(g_all.exit_status);

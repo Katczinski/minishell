@@ -20,9 +20,7 @@
 # include <errno.h>
 # include <string.h>
 
-
-
-typedef struct	s_all
+typedef struct s_all
 {
 	struct termios	term;
 	struct termios	saved;
@@ -40,7 +38,7 @@ typedef struct	s_all
 	t_info			*args;
 }					t_all;
 
-
+int					**create_fd(int num);
 int					ft_putchar(int c);
 int					is_redir(int type);
 int					is_all_whitespaces(char *str);
@@ -72,4 +70,5 @@ char				*subst_value(char *line);
 t_command_list		*find_cmd(t_command_list *cmd);
 t_command_list		*get_cmd(t_command_list *cmd);
 t_command_list		*next_pipe(t_command_list *cmd);
+
 #endif
