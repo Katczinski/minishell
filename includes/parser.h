@@ -28,38 +28,72 @@
 
 typedef struct s_command_list
 {
-	int					type;
-	int					quoted;
-	char    			**command;
-	int					lines;
-	struct	s_command_list	*next;
-	struct	s_command_list	*prev;
-}   				t_command_list;
+	int						type;
+	int						quoted;
+	char					**command;
+	int						lines;
+	struct s_command_list	*next;
+	struct s_command_list	*prev;
+}				t_command_list;
 
 typedef struct s_info
 {
-    t_command_list		*head;
-    t_command_list		*tail;
+	t_command_list		*head;
+	t_command_list		*tail;
 	int					status;
-    int				elements;
-}  				t_info;
+	int					elements;
+	int					quotes;
+	int					dquotes;
+	int					redirects;
+}				t_info;
 
+typedef struct s_ft_env
+{
+	char	*prev_str;
+	char	*curr_str;
+	char	*next_str;
+	char	*tmp;
+	char	*key;
+	int		start;
+	int		j;
+}				t_ft_env;
 
+typedef struct s_ft_quote
+{
+	char	*prev_str;
+	char	*curr_str;
+	char	*next_str;
+	char	*tmp;
+	int		frst_quote;
+}				t_ft_quote;
 
-//Utils
-int				get_next_line(int fd, char **line);
+typedef struct s_ft_dquote
+{
+	char	*prev_str;
+	char	*curr_str;
+	char	*next_str;
+	char	*tmp;
+	int		frst_quote;
+}				t_ft_dquote;
+
 int				print_error(char *msg, t_info *info, int mode);
 int				skip_whitespaces(int i, char *line);
-int check_pipes_n_redirects(char *line);
-char	    			**ft_split_modified(char const *s);
-char				*treat_env(char *line, int *i, char **envp, t_info *info);
-char *treat_space(char *line, int *i, char **envp, t_info *info);
-//Parsing
-t_info	*init_struct(int status);
-t_info 				*parser(char *line, char **envp, int status);
-t_command_list			*init_element(t_info *info);
-void				add_element(t_command_list *element, t_info *info);
-char				**add_line_to_cmd(char *line, t_command_list *cmd, t_info *info);
+char			*treat_env(char *line, int *i, char **envp, t_info *info);
+char			*treat_quote(char *line, int *i, t_info *info);
+char			*treat_dquote(char *line, int *i, char **envp, t_info *info);
+char			*treat_pipe(char *line, int *i, t_info *info);
+int				copy_prev_line(t_info *info, int *i, char *line);
+char			*treat_redirect(char *line, int *i, char **envp, t_info *info);
+char			*treat_space(char *line, int *i, char **envp, t_info *info);
 
+
+// void			ft_free_lines(char *str1, char *str2, char *str3, char *str4);
+t_info			*init_struct(int status);
+t_info			*parser(char *line, char **envp, int status);
+t_command_list	*init_element(t_info *info);
+void			add_element(t_command_list *element, t_info *info);
+char			**add_line_to_cmd(char *line,
+					t_command_list *cmd, t_info *info);
+int				line_check(char *line, t_info *info);
 
 #endif

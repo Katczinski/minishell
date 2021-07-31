@@ -25,10 +25,10 @@ static int	go_home(char **path, char **envp, t_info *info)
 	return (0);
 }
 
-int ft_cd(t_command_list *list, char **envp, t_info *info)
+int	ft_cd(t_command_list *list, char **envp, t_info *info)
 {
-	int ret;
-	char *path;
+	int		ret;
+	char	*path;
 
 	ret = 0;
 	if (list->lines < 3)
@@ -42,9 +42,9 @@ int ft_cd(t_command_list *list, char **envp, t_info *info)
 		else
 			path = list->command[1];
 		if (chdir(path) == -1)
-			return(print_error(strerror(errno), info, 0));
+			return (print_error(strerror(errno), info, 0));
 	}
 	else
-		return(print_error("minishell: cd: to many arguments", info, 0));
+		return (print_error("minishell: cd: to many arguments", info, 0));
 	return (ret);
 }

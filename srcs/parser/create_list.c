@@ -2,7 +2,7 @@
 
 t_command_list	*init_element(t_info *info)
 {
-	t_command_list *element;
+	t_command_list	*element;
 
 	element = malloc(sizeof(t_command_list));
 	if (!element)
@@ -13,7 +13,6 @@ t_command_list	*init_element(t_info *info)
 	element->type = 0;
 	element->quoted = 0;
 	element->command = 0;
-	// element->file_name = 0;
 	element->lines = 0;
 	element->next = 0;
 	element->prev = 0;
@@ -35,7 +34,7 @@ void	add_element(t_command_list *element, t_info *info)
 	}
 }
 
-char **add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
+char	**add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
 {
 	char	**arr;
 	int		j;
@@ -47,18 +46,16 @@ char **add_line_to_cmd(char *line, t_command_list *cmd, t_info *info)
 		return (0);
 	}
 	j = -1;
-	if(cmd->command)
+	if (cmd->command)
 	{
 		while (cmd->command[++j])
 		{
-			arr[j] = malloc(sizeof(char) * (ft_strlen(cmd->command[j]) + 1));
-			arr[j] = ft_memcpy(arr[j], cmd->command[j], ft_strlen(cmd->command[j]));
+			arr[j] = ft_strdup(cmd->command[j]);
 			free(cmd->command[j]);
 		}
 		free(cmd->command);
 	}
-	arr[cmd->lines - 1] = malloc(sizeof(char) * (ft_strlen(line) + 1));
-	arr[cmd->lines - 1] = ft_memcpy(arr[cmd->lines - 1], line, ft_strlen(line));
+	arr[cmd->lines - 1] = ft_strdup(line);
 	arr[cmd->lines] = 0;
 	free(line);
 	return (arr);

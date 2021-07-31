@@ -2,6 +2,12 @@ SRCS = minishell.c\
 	srcs/parser/create_list.c\
 	srcs/parser/init.c\
 	srcs/parser/parser.c\
+	srcs/parser/line_checks.c\
+	srcs/parser/treat_env.c\
+	srcs/parser/treat_quote.c\
+	srcs/parser/treat_dquote.c\
+	srcs/parser/treat_pipe.c\
+	srcs/parser/treat_redirect.c\
 	srcs/builtins/ft_echo.c\
 	srcs/builtins/ft_cd.c\
 	srcs/builtins/ft_pwd.c\
@@ -9,10 +15,10 @@ SRCS = minishell.c\
 	srcs/builtins/ft_unset.c\
 	srcs/builtins/ft_env.c\
 	srcs/builtins/ft_exit.c\
-	srcs/utils/ft_split_modified.c\
-	srcs/utils/get_next_line.c\
 	srcs/utils/print_error.c\
-	srcs/utils/check_pipes_n_redirects.c\
+	srcs/utils/backward_skip_whitespaces.c\
+	srcs/utils/ft_export_utils_for_print.c\
+	srcs/utils/ft_export_utils_for_add.c\
 	srcs/redirects/redirects.c\
 	srcs/free/free_and_exit.c\
 	srcs/tools/redirect_tools.c\

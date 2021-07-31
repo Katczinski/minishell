@@ -2,7 +2,7 @@
 
 static int	has_only_digits(char *cmd)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (cmd[i] && ft_isdigit(cmd[i]))
@@ -14,7 +14,7 @@ static int	has_only_digits(char *cmd)
 
 static int	find_pipe(t_command_list *list)
 {
-	t_command_list *tmp;
+	t_command_list	*tmp;
 
 	tmp = list;
 	while (tmp)
@@ -33,9 +33,24 @@ static int	find_pipe(t_command_list *list)
 	return (0);
 }
 
+static void	change_status(int *exit_status, int *status, int mode)
+{
+	if (!mode)
+	{
+		printf("minishell: exit: too many arguments\n");
+		*exit_status = 1;
+		*status = 0;
+	}
+	else
+	{
+		printf("minishell: exit: numeric argument required\n");
+		*exit_status = 255;
+	}
+}
+
 void	ft_exit(t_command_list *list, int *exit_status, int *status)
 {
-	int value;
+	int	value;
 
 	if (list->command[1])
 		value = ft_atoi(list->command[1]);
@@ -46,18 +61,13 @@ void	ft_exit(t_command_list *list, int *exit_status, int *status)
 	}
 	if (!list->command[1])
 		*exit_status = 0;
-	else if (list->command[1] && list->command[2] && has_only_digits(list->command[1]))
-	{
-		printf("minishell: exit: too many arguments\n");
-		*exit_status = 1;
-		*status = 0;
-	}
+	else if (list->command[1] && list->command[2]
+		&& has_only_digits(list->command[1]))
+		change_status(exit_status, status, 0);
 	else if (list->command[1] && !has_only_digits(list->command[1]))
-	{
-		printf("minishell: exit: numeric argument required\n");
-		*exit_status = 255;
-	}
-	else if (list->command[1] && !list->command[2] && has_only_digits(list->command[1]))
+		change_status(exit_status, status, 1);
+	else if (list->command[1] && !list->command[2]
+		&& has_only_digits(list->command[1]))
 	{
 		if (value < 0 || value > 255)
 			*exit_status = value & 0377;
