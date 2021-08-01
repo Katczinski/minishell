@@ -47,7 +47,7 @@ static char	*save_output_line(t_ft_dquote *dquote, char *line, int *i,
 	dquote->next_str = ft_strdup(line + *i + 1);
 	output = ft_strjoin(dquote->tmp, dquote->next_str);
 	*i = (*i) - 2;
-	if (!dquote->curr_str[0] && info->tail)
+	if (dquote->curr_str && !dquote->curr_str[0] && info->tail)
 	{
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(dquote->curr_str,
@@ -70,10 +70,7 @@ char	*treat_dquote(char *line, int *i, char **envp, t_info *info)
 		info->tail->quoted = 1;
 	while (line[++(*i)])
 	{
-		if (line[*i] == '$' && (!info->tail
-				|| (info->tail && info->tail->type != DRED_IN)))
-			line = treat_env(line, i, envp, info);
-		if (line[*i] == '\"')
+		if (*i >= 0 && line[*i] == '\"')
 		{
 			dquote->curr_str = malloc(sizeof(char)
 					* ((*i) - dquote->frst_quote));
@@ -81,7 +78,10 @@ char	*treat_dquote(char *line, int *i, char **envp, t_info *info)
 					+ dquote->frst_quote + 1, (size_t)((*i)
 						- dquote->frst_quote - 1));
 			break ;
-		}			
+		}
+		if (*i >= 0 && line[*i] == '$' && (!info->tail
+				|| (info->tail && info->tail->type != DRED_IN)))
+			line = treat_env(line, i, envp, info);
 	}
 	output = save_output_line(dquote, line, i, info);
 	return (output);

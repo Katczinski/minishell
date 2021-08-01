@@ -79,12 +79,28 @@ void	save_curr_line(t_ft_env *env, char **envp, t_info *info)
 		env->curr_str = ft_itoa(info->status);
 }
 
+char	*delete_env_sign(t_ft_env *env, char *line, int *i)
+{
+	char	*output;
+
+	output = 0;
+    env->prev_str = malloc(sizeof(char) * (*i + 1));
+    env->prev_str = ft_memcpy(env->prev_str, line, (size_t)(*i));
+	env->next_str = ft_strdup(line + *i + 1);
+	output = ft_strjoin(env->prev_str, env->next_str);
+	free_env(env, line);
+	(*i)--;
+	return (output);
+}
+
 char	*treat_env(char *line, int *i, char **envp, t_info *info)
 {
 	t_ft_env	*env;
 	char		*output;
 
 	env = init_env(info, i);
+	if ((line[*i + 1] == '\'' || line[*i + 1] == '\"'))
+		return (delete_env_sign(env, line, i));
 	if (line[env->start + 1] != '_' && line[env->start + 1] != '?'
 		&& !ft_isalnum(line[env->start + 1]))
 	{
@@ -95,9 +111,11 @@ char	*treat_env(char *line, int *i, char **envp, t_info *info)
 	save_curr_line(env, envp, info);
 	if (!env->curr_str && !envp[env->j])
 	{
-		*i = env->start;
 		output = ft_strjoin(env->prev_str, env->next_str);
 		free_env(env, line);
+		*i = env->start;
+		if (output && (output[*i] == '$' || output[*i] == '\"'))
+			(*i)--;
 		return (output);
 	}
 	env->tmp = ft_strjoin(env->prev_str, env->curr_str);
