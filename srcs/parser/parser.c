@@ -80,6 +80,8 @@ static void	add_last_arg(char *line, int i, t_info *info)
 		info->tail->lines++;
 		info->tail->command = add_line_to_cmd(line, info->tail, info);
 	}
+	else if (line && *line == '\0')
+		free(line);
 	set_types(info);
 	post_treat(info);
 }

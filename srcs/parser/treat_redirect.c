@@ -19,6 +19,8 @@ char	*save_output(char *line, int *i, t_info *info)
 	char	*file_name;
 	char	*output;
 
+	file_name = 0;
+	output = 0;
 	file_name = malloc(sizeof(char) * (*i + 1));
 	file_name = ft_memcpy(file_name, line, *i);
 	info->tail->lines++;
@@ -27,6 +29,7 @@ char	*save_output(char *line, int *i, t_info *info)
 	output = ft_strdup(line + *i);
 	if (output[0] && output[0] != '<' && output[0] != '>' && output[0] != '|')
 		add_element(init_element(info), info);
+	free(line);
 	return (output);
 }
 
@@ -35,6 +38,7 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 	char	*output;
 
 	*i = 0;
+	output = 0;
 	while (line[(*i)] && line[*i] != ' '
 		&& line[*i] != '<' && line[*i] != '>'
 		&& line[*i] != '|')
@@ -49,7 +53,6 @@ char	*add_red_in(char *line, int *i, char **envp, t_info *info)
 		(*i)++;
 	}
 	output = save_output(line, i, info);
-	free(line);
 	return (output);
 }
 
@@ -79,11 +82,13 @@ char	*treat_redirect(char *line, int *i, char **envp, t_info *info)
 	char	*output;
 	int		type;
 
+	output = 0;
 	if (!copy_prev_line(info, i, line))
 		return (0);
 	type = set_red_type(line, i, info);
 	ft_skip_whitespaces(i, line);
 	output = ft_strdup(line + *i);
+	free(line);
 	if ((type == RED_IN || type == DRED_IN || type == RED_OUT
 			|| type == DRED_OUT) && (!info->tail->prev
 			|| info->tail->prev->type == PIPE
@@ -93,6 +98,5 @@ char	*treat_redirect(char *line, int *i, char **envp, t_info *info)
 			|| info->tail->prev->type == DRED_OUT) && !find_comand(info->tail))
 		output = add_red_in(output, i, envp, info);
 	*i = -1;
-	free(line);
 	return (output);
 }
