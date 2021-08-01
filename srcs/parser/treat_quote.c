@@ -37,6 +37,27 @@ static void	free_quote(t_ft_quote *quote, char *line)
 	}
 }
 
+static char	*save_output_line(t_ft_quote *quote, char *line, int *i,
+								t_info *info)
+{
+	char	*output;
+
+	output = 0;
+	quote->tmp = ft_strjoin(quote->prev_str, quote->curr_str);
+	quote->next_str = ft_strdup(line + *i + 1);
+	output = ft_strjoin(quote->tmp, quote->next_str);
+	if (!quote->curr_str[0] && info->tail)
+	{
+		info->tail->lines++;
+		info->tail->command = add_line_to_cmd(quote->curr_str,
+				info->tail, info);
+		quote->curr_str = 0;
+	}
+	*i = (*i) - 2;
+	free_quote(quote, line);
+	return (output);
+}
+
 char	*treat_quote(char *line, int *i, t_info *info)
 {
 	char		*output;
@@ -58,10 +79,6 @@ char	*treat_quote(char *line, int *i, t_info *info)
 			break ;
 		}
 	}
-	quote->tmp = ft_strjoin(quote->prev_str, quote->curr_str);
-	quote->next_str = ft_strdup(line + *i + 1);
-	output = ft_strjoin(quote->tmp, quote->next_str);
-	*i = (*i) - 2;
-	free_quote(quote, line);
+	output = save_output_line(quote, line, i, info);
 	return (output);
 }

@@ -37,14 +37,23 @@ static void	free_dquote(t_ft_dquote *dquote, char *line)
 	}
 }
 
-static char	*save_output_line(t_ft_dquote *dquote, char *line, int *i)
+static char	*save_output_line(t_ft_dquote *dquote, char *line, int *i,
+								t_info *info)
 {
 	char	*output;
 
+	output = 0;
 	dquote->tmp = ft_strjoin(dquote->prev_str, dquote->curr_str);
 	dquote->next_str = ft_strdup(line + *i + 1);
 	output = ft_strjoin(dquote->tmp, dquote->next_str);
 	*i = (*i) - 2;
+	if (!dquote->curr_str[0] && info->tail)
+	{
+		info->tail->lines++;
+		info->tail->command = add_line_to_cmd(dquote->curr_str,
+				info->tail, info);
+		dquote->curr_str = 0;
+	}
 	free_dquote(dquote, line);
 	return (output);
 }
@@ -74,6 +83,6 @@ char	*treat_dquote(char *line, int *i, char **envp, t_info *info)
 			break ;
 		}			
 	}
-	output = save_output_line(dquote, line, i);
+	output = save_output_line(dquote, line, i, info);
 	return (output);
 }
