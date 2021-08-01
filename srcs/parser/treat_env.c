@@ -93,13 +93,28 @@ char	*delete_env_sign(t_ft_env *env, char *line, int *i)
 	return (output);
 }
 
+int	in_quotes(char *line, int *i)
+{
+	int	j;
+	int dquotes;
+
+	j = *i;
+	dquotes = 0;
+	while (line[--j])
+		if (line[j] == '\"')
+			dquotes++;
+	if (dquotes % 2)
+		return (1);
+	return (0);
+}
+
 char	*treat_env(char *line, int *i, char **envp, t_info *info)
 {
 	t_ft_env	*env;
 	char		*output;
 
 	env = init_env(info, i);
-	if ((line[*i + 1] == '\'' || line[*i + 1] == '\"'))
+	if (((line[*i + 1] == '\'' || line[*i + 1] == '\"') && !in_quotes(line, i)))
 		return (delete_env_sign(env, line, i));
 	if (line[env->start + 1] != '_' && line[env->start + 1] != '?'
 		&& !ft_isalnum(line[env->start + 1]))
