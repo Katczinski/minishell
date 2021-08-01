@@ -9,6 +9,8 @@ void	exec_dredin(t_command_list *cmd)
 
 	fd = 0;
 	read = 1;
+	while (cmd->prev)
+		cmd = cmd->prev;
 	while (cmd)
 	{
 		if (fd)
