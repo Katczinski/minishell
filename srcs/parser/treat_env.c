@@ -1,48 +1,6 @@
 #include "parser.h"
 
-static t_ft_env	*init_env(t_info *info, int *i)
-{
-	t_ft_env	*env;
-
-	env = malloc(sizeof(t_ft_env));
-	if (!env)
-		print_error("Malloc error\n", info, 1);
-	env->prev_str = 0;
-	env->curr_str = 0;
-	env->next_str = 0;
-	env->tmp = 0;
-	env->key = 0;
-	env->start = *i;
-	env->j = -1;
-	return (env);
-}
-
-static void	free_env(t_ft_env *env, char *line)
-{
-	if (env && env->prev_str)
-		free(env->prev_str);
-	if (env && env->curr_str)
-		free(env->curr_str);
-	if (env && env->next_str)
-		free(env->next_str);
-	if (env && env->tmp)
-		free(env->tmp);
-	if (env && env->key)
-		free(env->key);
-	if (line)
-		free(line);
-	if (env)
-	{
-		env->prev_str = 0;
-		env->curr_str = 0;
-		env->next_str = 0;
-		env->tmp = 0;
-		env->key = 0;
-		free(env);
-	}
-}
-
-void	save_prev_key_next_lines(t_ft_env *env, char *line, int *i)
+static void	save_prev_key_next_lines(t_ft_env *env, char *line, int *i)
 {
 	env->prev_str = malloc(sizeof(char) * (*i + 1));
 	env->prev_str = ft_memcpy(env->prev_str, line, (size_t)(*i));
@@ -60,7 +18,7 @@ void	save_prev_key_next_lines(t_ft_env *env, char *line, int *i)
 	env->next_str = strdup(line + *i + 1);
 }
 
-void	save_curr_line(t_ft_env *env, char **envp, t_info *info)
+static void	save_curr_line(t_ft_env *env, char **envp, t_info *info)
 {
 	while (envp[++env->j])
 	{
@@ -79,13 +37,13 @@ void	save_curr_line(t_ft_env *env, char **envp, t_info *info)
 		env->curr_str = ft_itoa(info->status);
 }
 
-char	*delete_env_sign(t_ft_env *env, char *line, int *i)
+static char	*delete_env_sign(t_ft_env *env, char *line, int *i)
 {
 	char	*output;
 
 	output = 0;
-    env->prev_str = malloc(sizeof(char) * (*i + 1));
-    env->prev_str = ft_memcpy(env->prev_str, line, (size_t)(*i));
+	env->prev_str = malloc(sizeof(char) * (*i + 1));
+	env->prev_str = ft_memcpy(env->prev_str, line, (size_t)(*i));
 	env->next_str = ft_strdup(line + *i + 1);
 	output = ft_strjoin(env->prev_str, env->next_str);
 	free_env(env, line);
@@ -93,19 +51,17 @@ char	*delete_env_sign(t_ft_env *env, char *line, int *i)
 	return (output);
 }
 
-int	in_quotes(char *line, int *i)
+static char	*save_env_output(t_ft_env *env, int *i, char *line)
 {
-	int	j;
-	int dquotes;
+	char	*output;
 
-	j = *i;
-	dquotes = 0;
-	while (line[--j])
-		if (line[j] == '\"')
-			dquotes++;
-	if (dquotes % 2)
-		return (1);
-	return (0);
+	output = 0;
+	env->tmp = ft_strjoin(env->prev_str, env->curr_str);
+	output = ft_strjoin(env->tmp, env->next_str);
+	if (env->curr_str)
+		*i = ft_strlen(env->curr_str) - 1 + env->start;
+	free_env(env, line);
+	return (output);
 }
 
 char	*treat_env(char *line, int *i, char **envp, t_info *info)
@@ -133,10 +89,6 @@ char	*treat_env(char *line, int *i, char **envp, t_info *info)
 			(*i)--;
 		return (output);
 	}
-	env->tmp = ft_strjoin(env->prev_str, env->curr_str);
-	output = ft_strjoin(env->tmp, env->next_str);
-	if (env->curr_str)
-		*i = ft_strlen(env->curr_str) - 1 + env->start;
-	free_env(env, line);
+	output = save_env_output(env, i, line);
 	return (output);
 }
