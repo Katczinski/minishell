@@ -54,20 +54,24 @@ int	value_found(char *cmd)
 
 int	change_value(char *env_name, char *cmd, char **envp, t_info *info)
 {
-	int	i;
+	int		i;
+	char	*name;
 
 	i = 0;
+	name = 0;
 	if (env_name && cmd)
 	{
 		while (envp[i] && ft_strncmp(envp[i], env_name, ft_strlen(env_name)))
 			i++;
-		if (value_found(cmd))
+		if (!envp[i])
+			return (print_error(strerror(errno), info, 0));
+		name = save_name(envp[i], info);
+		if (value_found(cmd) && !strcmp(env_name, name))
 		{
 			free(envp[i]);
 			envp[i] = ft_strdup(cmd);
 		}
-		if (!envp[i])
-			return (print_error(strerror(errno), info, 0));
+		free(name);
 	}
 	return (0);
 }
