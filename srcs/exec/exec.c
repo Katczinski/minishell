@@ -9,7 +9,7 @@ void	exec_builtin(t_command_list *cmd)
 	if (cmd->type == FT_PWD)
 		g_all.exit_status = ft_pwd(g_all.args);
 	if (cmd->type == FT_CD)
-		g_all.exit_status = ft_cd(cmd, g_all.envp, g_all.args);
+		g_all.exit_status = ft_cd(cmd, &g_all.envp, g_all.args);
 	if (cmd->type == FT_EXPORT)
 		g_all.exit_status = ft_export(cmd, &g_all.envp, g_all.args);
 	if (cmd->type == FT_UNSET)
