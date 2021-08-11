@@ -93,5 +93,9 @@ char			**add_line_to_cmd(char *line,
 					t_command_list *cmd, t_info *info);
 void			throw_args_to_cmd(t_command_list *list, t_info *info);
 int				line_check(char *line, t_info *info);
+t_ft_env		*init_env(t_info *info, int *i);
+void			free_env(t_ft_env *env, char *line);
+int				in_quotes(char *line, int *i);
+char			**add_envp(char *cmd, char **envp, t_info *info);
 
 #endif

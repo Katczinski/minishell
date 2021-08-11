@@ -20,6 +20,7 @@ SRCS = minishell.c\
 	srcs/utils/backward_skip_whitespaces.c\
 	srcs/utils/ft_export_utils_for_print.c\
 	srcs/utils/ft_export_utils_for_add.c\
+	srcs/utils/treat_env_utils.c\
 	srcs/redirects/redirects.c\
 	srcs/free/free_and_exit.c\
 	srcs/tools/redirect_tools.c\
