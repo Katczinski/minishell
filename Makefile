@@ -33,11 +33,11 @@ SRCS = minishell.c\
 
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 
+HEADER = ./includes/*
+
 NAME = minishell
 
-UBU = /usr/local
-MAC = /Users/abirthda/.brew
-USER = $(UBU)
+USER = /Users/abirthda/.brew
 
 INC = -Iincludes -Ilibft -I $(USER)/Cellar/readline/8.1/include
 
@@ -47,7 +47,7 @@ FLAGS = -Wall -Wextra -Werror
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) $(HEADER)
 		make -C ./libft
 		gcc $(FLAGS) -g $(OBJS) -o $(NAME) $(INC) $(LIBS) 
 
